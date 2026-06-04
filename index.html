@@ -201,30 +201,35 @@
     .login-left { display: none; }
     .login-right { width: 100%; padding: 32px 24px; min-height: 100svh; }
 
+    /* Topbar */
+    .topbar { padding: 0 16px; }
+    .talento-name { display: none; }
+
     /* Dashboard layout */
-    .dash-header { padding: 20px 16px 0; }
-    .dash-header h1 { font-size: 32px; }
-    .dash-header-right { display: none; }
+    .dash-header { padding: 20px 16px 0; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .dash-header h1 { font-size: 36px; }
     .dash-inner { padding: 16px; }
-    .dash-nav { padding: 0 16px; gap: 20px; }
-    .dash-nav a { font-size: 13px; padding-bottom: 10px; }
 
-    /* KPI grids → 2 columnas en móvil */
-    .kpi-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
-    .perf-kpi-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+    /* Section nav */
+    .section-nav { gap: 0; overflow-x: auto; }
+    .snav-item { padding: 10px 14px; font-size: 12px; white-space: nowrap; }
+
+    /* KPI grids → 2 columnas */
+    .kpi-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px; }
+    .perf-kpi-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px; }
     .kpi-card { padding: 14px; }
-    .kpi-val { font-size: 28px; }
+    .kpi-val { font-size: 26px; }
+    .kpi-label { font-size: 10px; }
 
-    /* Status bar → 1 columna */
-    .status-bar { grid-template-columns: 1fr; gap: 8px; }
+    /* Status bar → 1 col */
+    .status-bar { grid-template-columns: 1fr !important; gap: 8px; }
 
     /* Two-col → single */
-    .two-col { grid-template-columns: 1fr; gap: 12px; }
+    .two-col { grid-template-columns: 1fr !important; gap: 12px; }
 
-    /* Ratios grid inline → 2 cols */
-    [style*="grid-template-columns:repeat(4,1fr)"] {
-      grid-template-columns: repeat(2,1fr) !important;
-    }
+    /* ALL inline grids with 4 cols → 2 cols */
+    div[style*="repeat(4,1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
+    div[style*="repeat(4, 1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
 
     /* Panels */
     .panel { padding: 16px; }
@@ -232,49 +237,38 @@
 
     /* Period bar */
     .period-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
-    #period-comparison { font-size: 11px; }
+    .period-pills { flex-wrap: wrap; }
 
-    /* Performance sub-tabs */
-    .perf-tabs { gap: 6px; flex-wrap: wrap; }
-    .perf-tab { font-size: 11px; padding: 6px 10px; }
+    /* Performance tabs */
+    .perf-platform-tabs { flex-wrap: wrap; gap: 6px; }
+    .ptab { font-size: 11px; padding: 6px 12px; }
 
-    /* Tables → scroll horizontal */
-    .campaign-table { font-size: 11px; }
-    .campaign-table th, .campaign-table td { padding: 8px 6px; white-space: nowrap; }
+    /* Tables → horizontal scroll */
+    .campaign-table { font-size: 11px; min-width: 500px; }
+    .campaign-table th, .campaign-table td { padding: 8px 5px; white-space: nowrap; }
 
-    /* Fee breakdown dark panel */
+    /* Fee breakdown */
     .fee-breakdown { padding: 20px 16px; }
-    .fee-total-val { font-size: 36px; }
+    .fee-main { font-size: 40px; }
+    .fee-breakdown::after { font-size: 100px; }
 
-    /* Desglose por campaña en KPIs → 2 cols */
-    [style*="grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px"] {
-      grid-template-columns: repeat(2,1fr) !important;
-    }
+    /* Charts */
+    .chart-container { height: 160px !important; }
 
     /* Modal */
     #modal-cobrar > div {
       padding: 20px 16px !important;
       max-width: 95vw !important;
+      max-height: 85vh !important;
     }
 
-    /* Cobro status */
-    [style*="grid-template-columns:1fr 1fr;gap:12px"] {
-      grid-template-columns: 1fr !important;
-    }
+    /* Insight strip */
+    .insight-strip { gap: 12px; }
+    .insight-item { min-width: 100px; }
+    .insight-val { font-size: 18px; }
 
-    /* Chart height reducida en móvil */
-    .chart-container { height: 180px !important; }
-
-    /* Header nav */
-    .dash-topbar { padding: 0 16px; }
-    .user-name { display: none; }
-  }
-
-
-  @media (max-width: 640px) {
-    /* Hide less important table columns on mobile */
-    .campaign-table .col-hide-mobile { display: none; }
-    .campaign-table { min-width: 500px; }
+    /* Por cobrar / cobrado blocks */
+    div[style*="1fr 1fr"] { grid-template-columns: 1fr !important; }
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
