@@ -331,30 +331,17 @@ let PERFORMANCE = {};
    SHEET LOADER
 ════════════════════════════════════════ */
 async function fetchSheetCSV(gid) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+  // Use Sheets API v4 — no CORS issues, works on Vercel
+  const sheetNames = { "1243275852": "Lista de Talento Activos", "0": "Ventas" };
+  const sheetName = sheetNames[gid] || gid;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`CSV fetch error: ${res.status}`);
-  const text = await res.text();
-  return parseCSV(text);
-}
-
-function parseCSV(text) {
-  const rows = [];
-  const lines = text.split(/\r?\n/);
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    const cols = [];
-    let cur = "", inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ""; }
-      else { cur += ch; }
-    }
-    cols.push(cur.trim());
-    rows.push(cols);
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(`Sheets API error ${res.status}: ${err?.error?.message || res.statusText}`);
   }
-  return rows;
+  const data = await res.json();
+  return data.values || [];
 }
 
 function parseNumber(str) {
@@ -424,7 +411,7 @@ async function loadSheetData() {
   try {
     // ── Cargar talentos (hoja: Lista de Talento Activos)
     const talentRows = await fetchSheetCSV("1243275852");
-    talentRows.shift(); // remove header row
+    if (talentRows.length > 0) talentRows.shift(); // remove header row
     TALENTS = {};
     for (const row of talentRows) {
       const status = (row[0]||"").trim();
@@ -454,7 +441,7 @@ async function loadSheetData() {
 
     // ── Cargar campañas (hoja: Ventas)
     const campRows = await fetchSheetCSV("0");
-    campRows.shift(); // remove header row
+    if (campRows.length > 0) campRows.shift(); // remove header row
     CAMPAIGNS = [];
     for (const row of campRows) {
       const id      = (row[2]||"").trim();
