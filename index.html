@@ -681,11 +681,13 @@ function renderCampanas(user, camps) {
     </div>
   `;
 
-  const activeCount = camps.filter(c=>c.status==="En Proceso").length;
+  const activeCount    = camps.filter(c => c.status.trim() === "En Proceso").length;
+  const pendingCount   = camps.filter(c => c.status.trim() === "Pendiente").length;
+  const finishedCount  = camps.filter(c => c.status.trim() === "Finalizado").length;
   document.getElementById("status-bar").innerHTML = `
-    <div class="status-item"><div class="status-dot" style="background:var(--red)"></div><div class="status-item-text"><strong>${activeCount}</strong>Campaña${activeCount!==1?"s":""} en proceso</div></div>
-    <div class="status-item"><div class="status-dot" style="background:var(--green)"></div><div class="status-item-text"><strong>${cobradoT>0?fmt(cobradoT):"Pendiente"}</strong>Cobrado talento</div></div>
-    <div class="status-item"><div class="status-dot" style="background:var(--amber)"></div><div class="status-item-text"><strong>${porCobT>0?fmtK(porCobT):"—"}</strong>Por cobrar</div></div>
+    <div class="status-item"><div class="status-dot" style="background:var(--red)"></div><div class="status-item-text"><strong>${activeCount}</strong>En proceso</div></div>
+    <div class="status-item"><div class="status-dot" style="background:var(--amber)"></div><div class="status-item-text"><strong>${pendingCount}</strong>Pendiente${pendingCount!==1?"s":""}</div></div>
+    <div class="status-item"><div class="status-dot" style="background:var(--green)"></div><div class="status-item-text"><strong>${finishedCount}</strong>Finalizada${finishedCount!==1?"s":""}</div></div>
   `;
 
   if (porCobT > 0) {
