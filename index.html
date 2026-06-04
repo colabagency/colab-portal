@@ -6,7 +6,8 @@
 <title>CO/LAB — Portal de Talentos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
+</script>
 <style>
   :root {
     --red: #E8380D; --red-dark: #B82C09;
@@ -187,16 +188,86 @@
   }
   .period-comparison span { font-weight: 500; color: var(--black); }
 
-  @media (max-width: 768px) {
+  /* ── TABLET (≤900px) ── */
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  }
+
+  /* ── MOBILE (≤640px) ── */
+  @media (max-width: 640px) {
+    /* Login */
     #login-page { flex-direction: column; }
     .login-left { display: none; }
-    .login-right { width: 100%; padding: 40px 28px; }
-    .kpi-grid, .perf-kpi-grid { grid-template-columns: repeat(2,1fr); }
-    .two-col { grid-template-columns: 1fr; }
-    .status-bar { grid-template-columns: 1fr; }
-    .dash-header h1 { font-size: 36px; }
-    .dash-inner { padding: 24px 20px; }
-    .period-bar { flex-direction: column; align-items: flex-start; }
+    .login-right { width: 100%; padding: 32px 24px; min-height: 100svh; }
+
+    /* Dashboard layout */
+    .dash-header { padding: 20px 16px 0; }
+    .dash-header h1 { font-size: 32px; }
+    .dash-header-right { display: none; }
+    .dash-inner { padding: 16px; }
+    .dash-nav { padding: 0 16px; gap: 20px; }
+    .dash-nav a { font-size: 13px; padding-bottom: 10px; }
+
+    /* KPI grids → 2 columnas en móvil */
+    .kpi-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .perf-kpi-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .kpi-card { padding: 14px; }
+    .kpi-val { font-size: 28px; }
+
+    /* Status bar → 1 columna */
+    .status-bar { grid-template-columns: 1fr; gap: 8px; }
+
+    /* Two-col → single */
+    .two-col { grid-template-columns: 1fr; gap: 12px; }
+
+    /* Ratios grid inline → 2 cols */
+    [style*="grid-template-columns:repeat(4,1fr)"] {
+      grid-template-columns: repeat(2,1fr) !important;
+    }
+
+    /* Panels */
+    .panel { padding: 16px; }
+    .panel-title { font-size: 10px; }
+
+    /* Period bar */
+    .period-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    #period-comparison { font-size: 11px; }
+
+    /* Performance sub-tabs */
+    .perf-tabs { gap: 6px; flex-wrap: wrap; }
+    .perf-tab { font-size: 11px; padding: 6px 10px; }
+
+    /* Tables → scroll horizontal */
+    .campaign-table { font-size: 11px; }
+    .campaign-table th, .campaign-table td { padding: 8px 6px; white-space: nowrap; }
+
+    /* Fee breakdown dark panel */
+    .fee-breakdown { padding: 20px 16px; }
+    .fee-total-val { font-size: 36px; }
+
+    /* Desglose por campaña en KPIs → 2 cols */
+    [style*="grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px"] {
+      grid-template-columns: repeat(2,1fr) !important;
+    }
+
+    /* Modal */
+    #modal-cobrar > div {
+      padding: 20px 16px !important;
+      max-width: 95vw !important;
+    }
+
+    /* Cobro status */
+    [style*="grid-template-columns:1fr 1fr;gap:12px"] {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Chart height reducida en móvil */
+    .chart-container { height: 180px !important; }
+
+    /* Header nav */
+    .dash-topbar { padding: 0 16px; }
+    .user-name { display: none; }
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -315,6 +386,19 @@
 </div>
 
 <script>
+
+function rGrid(cols) {
+  return window.innerWidth <= 640
+    ? (cols >= 4 ? "repeat(2,1fr)" : cols === 3 ? "repeat(2,1fr)" : "1fr 1fr")
+    : `repeat(${cols},1fr)`;
+}
+window.addEventListener("resize", () => {
+  if (typeof currentUser !== "undefined" && currentUser) {
+    const activeTab = document.querySelector(".dash-nav a.active");
+    if (activeTab) activeTab.click();
+  }
+});
+
 /* ════════════════════════════════════════
    CONFIG — Google Sheets en tiempo real
 ════════════════════════════════════════ */
@@ -770,7 +854,7 @@ function renderKpis(user, camps) {
       <div class="kpi-card" style="border-left:3px solid var(--amber);cursor:pointer;transition:box-shadow 0.15s" onclick="showCobrarModal(currentUser)" onmouseenter="this.style.boxShadow='0 4px 16px rgba(217,119,6,0.2)'" onmouseleave="this.style.boxShadow=''"><div class="kpi-label">Por cobrar talento</div><div class="kpi-val" style="color:var(--amber)">${fmtK(porCobT)}</div><div class="kpi-sub">Pendiente · <span style="color:var(--amber);text-decoration:underline">ver detalle →</span></div></div>
     </div>
     <!-- Ratios -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:${rGrid(4)};gap:10px;margin-bottom:20px">
       ${[
         ["Campañas", camps.length, "activas 2026"],
         ["IVA",      fmt(ivaAmt),  "16% calculado"],
@@ -790,7 +874,7 @@ function renderKpis(user, camps) {
               <div style="flex:1;font-size:13px;font-weight:500">${c.campana}</div>
               <div style="font-size:11px;color:var(--gray-500)">${c.marca} · ${c.fecha_inicio}–${c.fecha_fin}</div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px">
+            <div style="display:grid;grid-template-columns:${rGrid(4)};gap:8px;font-size:12px">
               <div><div style="color:var(--gray-500);margin-bottom:2px">Subtotal campaña</div><div style="font-weight:500">${fmt(c.subtotal)}</div></div>
               <div><div style="color:var(--gray-500);margin-bottom:2px">Fee agencia</div><div style="color:var(--red)">− ${fmt(c.fee)}</div></div>
               <div><div style="color:var(--gray-500);margin-bottom:2px">Subtotal talento</div><div style="color:var(--green);font-weight:500">${fmt(c.sub_t)}</div></div>
@@ -1102,7 +1186,7 @@ function renderVentasCampanas(user, period) {
     </div>
 
     <!-- Ratios row -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:${rGrid(4)};gap:8px;margin-bottom:16px">
       ${[
         { l:"Campañas",      v: camps.length,  s:"en el período" },
         { l:"Marcas",        v: marcas.length, s: marcas.join(", ") },
@@ -1206,7 +1290,7 @@ function renderVentasCampanas(user, period) {
     </div>
 
     <!-- Cobro status -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:${window.innerWidth<=640?"1fr":"1fr 1fr"};gap:12px;margin-bottom:16px">
       <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:12px;padding:20px">
         <div style="font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:8px">Cobrado talento</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--green);line-height:1">${cobradoT > 0 ? fmt(cobradoT) : "—"}</div>
