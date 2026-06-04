@@ -100,7 +100,7 @@
   .camp-status { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; }
   .status-active { background: var(--green-light); color: var(--green); }
   .status-pending { background: var(--amber-light); color: var(--amber); }
-  .fee-breakdown { background: var(--black); border-radius: 12px; padding: 24px; color: white; margin-bottom: 16px; position: relative; overflow: hidden; }
+  .fee-breakdown { background: var(--black); border-radius: 12px; padding: 24px; color: white; margin-bottom: 16px; position: relative; overflow: hidden; max-height: 700px; }
   .fee-breakdown::after { content: 'FEE'; position: absolute; font-family: 'Bebas Neue', sans-serif; font-size: 160px; color: rgba(232,56,13,0.1); right: -10px; bottom: -20px; line-height: 1; pointer-events: none; }
   .fee-breakdown .panel-title { color: rgba(255,255,255,0.4); }
   .fee-main { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 1px; color: var(--red); line-height: 1; margin-bottom: 8px; }
@@ -270,6 +270,12 @@
     .user-name { display: none; }
   }
 
+
+  @media (max-width: 640px) {
+    /* Hide less important table columns on mobile */
+    .campaign-table .col-hide-mobile { display: none; }
+    .campaign-table { min-width: 500px; }
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -386,6 +392,8 @@
 </div>
 
 <script>
+
+const norm = s => String(s||"").trim().toLowerCase().replace(/\s+/g," ");
 
 function rGrid(cols) {
   return window.innerWidth <= 640
@@ -765,9 +773,9 @@ function renderCampanas(user, camps) {
     </div>
   `;
 
-  const activeCount    = camps.filter(c => c.status.trim() === "En Proceso").length;
-  const pendingCount   = camps.filter(c => c.status.trim() === "Pendiente").length;
-  const finishedCount  = camps.filter(c => c.status.trim() === "Finalizado").length;
+  const activeCount    = camps.filter(c => norm(c.status) === "en proceso").length;
+  const pendingCount   = camps.filter(c => norm(c.status) === "pendiente").length;
+  const finishedCount  = camps.filter(c => norm(c.status) === "finalizado").length;
   document.getElementById("status-bar").innerHTML = `
     <div class="status-item"><div class="status-dot" style="background:var(--red)"></div><div class="status-item-text"><strong>${activeCount}</strong>En proceso</div></div>
     <div class="status-item"><div class="status-dot" style="background:var(--amber)"></div><div class="status-item-text"><strong>${pendingCount}</strong>Pendiente${pendingCount!==1?"s":""}</div></div>
@@ -808,7 +816,7 @@ function renderCampanas(user, camps) {
           <td style="text-align:right;font-weight:600">${fmt(c.total_t)}</td>
           <td style="text-align:right;color:var(--green);font-size:12px">${c.cobrado_t>0?fmt(c.cobrado_t):"—"}</td>
           <td style="text-align:right;color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</td>
-          <td><span class="camp-status ${c.status==="En Proceso"?"status-active":"status-pending"}">${c.status}</span>${c.cfdi?`<div style="font-size:10px;color:var(--gray-500);margin-top:4px">📄 CFDI</div>`:""}</td>
+          <td><span class="camp-status ${norm(c.status)==="en proceso"?"status-active":"status-pending"}">${c.status}</span>${c.cfdi?`<div style="font-size:10px;color:var(--gray-500);margin-top:4px">📄 CFDI</div>`:""}</td>
         </tr>`).join("")}</tbody>
       </table></div>`;
 
@@ -1266,7 +1274,7 @@ function renderVentasCampanas(user, period) {
             <td style="text-align:right;font-weight:600">${fmt(c.total_t)}</td>
             <td style="text-align:right;color:var(--green);font-size:12px">${c.cobrado_t > 0 ? fmt(c.cobrado_t) : "—"}</td>
             <td style="text-align:right;color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</td>
-            <td><span class="camp-status ${c.status==="En Proceso"?"status-active":"status-pending"}">${c.status}</span></td>
+            <td><span class="camp-status ${norm(c.status)==="en proceso"?"status-active":"status-pending"}">${c.status}</span></td>
             <td style="font-size:11px;color:var(--gray-500)">${c.cfdi ? `<span style="color:var(--green)">✓ ${c.cfdi}</span>` : "<span style='color:var(--amber)'>Pendiente</span>"}</td>
           </tr>`).join("")}
         </tbody>
