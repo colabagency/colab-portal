@@ -6,8 +6,7 @@
 <title>CO/LAB — Portal de Talentos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
     --red: #E8380D; --red-dark: #B82C09;
@@ -311,7 +310,14 @@
   <div class="dash-inner">
     <div class="dash-header">
       <h1>Hola, <span id="dash-name">--</span></h1>
-      <div class="period" id="dash-period">2026 · Campañas activas</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="period" id="dash-period">Campañas</div>
+        <div style="display:flex;align-items:center;gap:6px;background:white;border:1px solid var(--gray-200);border-radius:8px;padding:4px 10px">
+          <button onclick="changeYear(-1)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gray-500);padding:0 4px;line-height:1;font-family:'DM Sans',sans-serif" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--gray-500)'">←</button>
+          <span id="year-display" style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;min-width:44px;text-align:center"></span>
+          <button onclick="changeYear(1)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gray-500);padding:0 4px;line-height:1;font-family:'DM Sans',sans-serif" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--gray-500)'">→</button>
+        </div>
+      </div>
     </div>
 
     <nav class="section-nav">
@@ -336,7 +342,7 @@
         </div>
         <div>
           <div class="fee-breakdown">
-            <div class="panel-title">Fee de agencia</div>
+            <div class="panel-title">Resumen financiero</div>
             <div class="fee-main" id="fee-total">$0</div>
             <div class="fee-desc" id="fee-desc"></div>
             <div id="fee-rows"></div>
@@ -625,6 +631,7 @@ function chgHtml(curr, prev) {
 }
 
 let currentUser = null;
+let currentYear = new Date().getFullYear();
 let currentPlatform = "ig";
 let currentPeriod = "all";
 let chartInstances = {};
@@ -685,6 +692,20 @@ document.addEventListener("keydown", e => {
 /* ════════════════════════════════════════
    NAVIGATION
 ════════════════════════════════════════ */
+function changeYear(dir) {
+  currentYear += dir;
+  document.getElementById("year-display").textContent = currentYear;
+  const camps = CAMPAIGNS.filter(c => c.talento_clave === currentUser.clave && campInYear(c, currentYear));
+  renderCampanas(currentUser, camps);
+  renderKpis(currentUser, camps);
+}
+
+function campInYear(c, year) {
+  // Check if campaign start or end date falls in the given year
+  const str = (c.fecha_inicio + " " + c.fecha_fin).toLowerCase();
+  return str.includes(String(year));
+}
+
 function switchSection(id, el) {
   document.querySelectorAll(".dash-section").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".snav-item").forEach(s => s.classList.remove("active"));
@@ -726,7 +747,9 @@ function renderAll(user) {
   document.getElementById("footer-date").textContent =
     "Actualizado: " + new Date().toLocaleDateString("es-MX", {day:"numeric",month:"long",year:"numeric"});
 
-  const camps = CAMPAIGNS.filter(c => c.talento_clave === user.clave);
+  currentYear = new Date().getFullYear();
+  document.getElementById("year-display").textContent = currentYear;
+  const camps = CAMPAIGNS.filter(c => c.talento_clave === user.clave && campInYear(c, currentYear));
   renderCampanas(user, camps);
   renderKpis(user, camps);
   switchSection("campanas", document.querySelectorAll(".snav-item")[0]);
@@ -772,22 +795,36 @@ function renderCampanas(user, camps) {
   const pendingCount   = camps.filter(c => norm(c.status) === "pendiente").length;
   const finishedCount  = camps.filter(c => norm(c.status) === "finalizado").length;
   document.getElementById("status-bar").innerHTML = `
-    <div class="status-item"><div class="status-dot" style="background:var(--red)"></div><div class="status-item-text"><strong>${activeCount}</strong>En proceso</div></div>
-    <div class="status-item"><div class="status-dot" style="background:var(--amber)"></div><div class="status-item-text"><strong>${pendingCount}</strong>Pendiente${pendingCount!==1?"s":""}</div></div>
-    <div class="status-item"><div class="status-dot" style="background:var(--green)"></div><div class="status-item-text"><strong>${finishedCount}</strong>Finalizada${finishedCount!==1?"s":""}</div></div>
+    <div class="status-item" onclick="showDetailModal('pendiente',currentUser)" style="cursor:pointer;transition:box-shadow 0.15s" onmouseenter="this.style.boxShadow='0 4px 12px rgba(217,119,6,0.15)'" onmouseleave="this.style.boxShadow=''">
+      <div class="status-dot" style="background:var(--amber)"></div>
+      <div class="status-item-text"><strong>${pendingCount}</strong>Pendiente${pendingCount!==1?"s":""} <span style="font-size:10px;color:var(--amber)">→</span></div>
+    </div>
+    <div class="status-item" onclick="showDetailModal('en proceso',currentUser)" style="cursor:pointer;transition:box-shadow 0.15s" onmouseenter="this.style.boxShadow='0 4px 12px rgba(29,111,184,0.15)'" onmouseleave="this.style.boxShadow=''">
+      <div class="status-dot" style="background:var(--blue)"></div>
+      <div class="status-item-text"><strong>${activeCount}</strong>En proceso <span style="font-size:10px;color:var(--blue)">→</span></div>
+    </div>
+    <div class="status-item" onclick="showDetailModal('finalizado',currentUser)" style="cursor:pointer;transition:box-shadow 0.15s" onmouseenter="this.style.boxShadow='0 4px 12px rgba(26,140,91,0.15)'" onmouseleave="this.style.boxShadow=''">
+      <div class="status-dot" style="background:var(--green)"></div>
+      <div class="status-item-text"><strong>${finishedCount}</strong>Finalizada${finishedCount!==1?"s":""} <span style="font-size:10px;color:var(--green)">→</span></div>
+    </div>
   `;
 
   const marcasSet   = [...new Set(camps.map(c => c.marca))];
   const agenciasSet = [...new Set(camps.map(c => c.agencia))];
-  document.getElementById("ratios-bar").innerHTML = [
-    { l:"Campañas", v: camps.length,       s: "en total" },
-    { l:"Marcas",   v: marcasSet.length,   s: marcasSet.join(", ") || "—" },
-    { l:"Agencias", v: agenciasSet.length, s: agenciasSet.join(", ") || "—" },
-  ].map(r => `
-    <div style="background:white;border:1px solid var(--gray-200);border-radius:10px;padding:16px 18px">
+  const ratioCards = [
+    { l:"Campañas", v: camps.length,       s: "en total",   tipo:"campanas" },
+    { l:"Marcas",   v: marcasSet.length,   s: marcasSet.join(", ") || "—", tipo:"marcas" },
+    { l:"Agencias", v: agenciasSet.length, s: agenciasSet.join(", ") || "—", tipo:"agencias" },
+  ];
+  document.getElementById("ratios-bar").innerHTML = ratioCards.map(r => `
+    <div onclick="showDetailModal('${r.tipo}',currentUser)"
+      style="background:white;border:1px solid var(--gray-200);border-radius:10px;padding:16px 18px;cursor:pointer;transition:box-shadow 0.15s,transform 0.1s"
+      onmouseenter="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)';this.style.transform='translateY(-1px)'"
+      onmouseleave="this.style.boxShadow='';this.style.transform=''">
       <div style="font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500);margin-bottom:6px">${r.l}</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;margin-bottom:4px">${r.v}</div>
       <div style="font-size:11px;color:var(--gray-500)">${r.s}</div>
+      <div style="font-size:10px;color:var(--red);margin-top:6px">Ver detalle →</div>
     </div>`).join("");
 
   if (porCobT > 0) {
@@ -826,6 +863,21 @@ function renderCampanas(user, camps) {
           <td style="text-align:right;color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</td>
           <td><span class="camp-status ${norm(c.status)==="en proceso"?"status-active":"status-pending"}">${c.status}</span>${c.cfdi?`<div style="font-size:10px;color:var(--gray-500);margin-top:4px">📄 CFDI</div>`:""}</td>
         </tr>`).join("")}</tbody>
+        <tfoot>
+          <tr style="border-top:2px solid var(--black);background:#FAFAF8">
+            <td colspan="2" style="font-family:'Bebas Neue',sans-serif;font-size:14px;padding-top:14px;padding-bottom:10px;letter-spacing:1px">TOTAL</td>
+            <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(sub)}</td>
+            <td style="text-align:right;color:var(--red);font-weight:700;padding-top:14px">− ${fmt(feeAmt)}</td>
+            <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${fmt(subT)}</td>
+            <td style="text-align:right;font-weight:600;padding-top:14px">${fmt(ivaAmt)}</td>
+            <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(ivaRet)}</td>
+            <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(isrRet)}</td>
+            <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(totalT)}</td>
+            <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${cobradoT>0?fmt(cobradoT):"—"}</td>
+            <td style="text-align:right;color:var(--amber);font-weight:700;padding-top:14px">${fmt(porCobT)}</td>
+            <td></td>
+          </tr>
+        </tfoot>
       </table></div>`;
 
   document.getElementById("fee-total").textContent = fmtK(totalT);
@@ -884,10 +936,14 @@ function renderKpis(user, camps) {
       ${camps.length===0?`<div class="empty-camp">Sin campañas aún.</div>`:
         camps.map(c=>{
           const bw = sub>0?Math.round(c.subtotal/sub*100):0;
+          const statusColor = norm(c.status)==="finalizado" ? "var(--green)" : norm(c.status)==="en proceso" ? "var(--blue)" : "var(--amber)";
+          const statusLabel = norm(c.status)==="finalizado" ? "Finalizado" : norm(c.status)==="en proceso" ? "En proceso" : "Pendiente";
+          const statusBg    = norm(c.status)==="finalizado" ? "var(--green-light)" : norm(c.status)==="en proceso" ? "var(--blue-light)" : "var(--amber-light)";
           return `<div style="padding:14px 0;border-bottom:1px solid var(--gray-100)">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:${statusColor};flex-shrink:0"></div>
               <div style="flex:1;font-size:13px;font-weight:500">${c.campana}</div>
+              <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;background:${statusBg};color:${statusColor}">${statusLabel}</span>
               <div style="font-size:11px;color:var(--gray-500)">${c.marca} · ${c.fecha_inicio}–${c.fecha_fin}</div>
             </div>
             <div style="display:grid;grid-template-columns:${rGrid(4)};gap:8px;font-size:12px">
@@ -898,9 +954,9 @@ function renderKpis(user, camps) {
               <div><div style="color:var(--gray-500);margin-bottom:2px">IVA</div><div>${fmt(c.iva)}</div></div>
               <div><div style="color:var(--gray-500);margin-bottom:2px">IVA Retenido</div><div style="color:var(--gray-500)">− ${fmt(c.iva_ret)}</div></div>
               <div><div style="color:var(--gray-500);margin-bottom:2px">ISR Retenido</div><div style="color:var(--gray-500)">− ${fmt(c.isr)}</div></div>
-              <div><div style="color:var(--gray-500);margin-bottom:2px">Por cobrar</div><div style="color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</div></div>
+              <div><div style="color:var(--gray-500);margin-bottom:2px">Por cobrar</div><div style="color:${statusColor};font-weight:500">${fmt(c.por_cobrar_t)}</div></div>
             </div>
-            <div style="margin-top:10px;height:4px;background:var(--gray-100);border-radius:2px;overflow:hidden"><div style="width:${bw}%;height:100%;background:var(--red);border-radius:2px"></div></div>
+            <div style="margin-top:10px;height:4px;background:var(--gray-100);border-radius:2px;overflow:hidden"><div style="width:${bw}%;height:100%;background:${statusColor};border-radius:2px"></div></div>
           </div>`;
         }).join("")}
     </div>
@@ -1104,31 +1160,23 @@ function renderVentasCampanas(user, period) {
   const el = document.getElementById("perf-content");
   const allCamps = CAMPAIGNS.filter(c => c.talento_clave === user.clave);
 
-  // Build full timeline from campaign dates
-  // Each campaign maps to months; we use a fixed monthly list
-  const ALL_MONTHS = ["Ene 2026","Feb 2026","Mar 2026","Abr 2026","May 2026","Jun 2026"];
-  const fullTimeline = ALL_MONTHS.map(mes => {
-    // Sum campaigns active in this month (by fecha_inicio month overlap)
-    let ingresos=0, fee=0, neto=0;
-    allCamps.forEach(c => {
-      // Simple heuristic: split campaign revenue evenly across its active months
-      const startLabel = c.fecha_inicio.replace(/^\d+ /,""); // "Mar 2026"
-      const endLabel   = c.fecha_fin.replace(/^\d+ /,"");    // "Abr 2026"
-      const si = ALL_MONTHS.indexOf(startLabel);
-      const ei = ALL_MONTHS.indexOf(endLabel);
-      const mi = ALL_MONTHS.indexOf(mes);
-      if (si>=0 && ei>=0 && mi>=si && mi<=ei) {
-        const months = ei - si + 1;
-        ingresos += Math.round(c.subtotal / months);
-        fee      += Math.round(c.fee      / months);
-        neto     += Math.round((c.subtotal - c.fee) / months);
-      }
-    });
-    return { mes, ingresos, fee, neto };
-  }).filter(t => t.ingresos > 0 || allCamps.length === 0); // only months with data
+  // Build timeline: recognize revenue in the month of fecha_inicio
+  const monthMap = {};
+  allCamps.forEach(c => {
+    const mes = c.fecha_inicio.replace(/^\d+ /,""); // "Mar 2026" from "31 Mar 2026"
+    if (!monthMap[mes]) monthMap[mes] = { mes, sub_t:0, total_t:0 };
+    monthMap[mes].sub_t   += c.sub_t;
+    monthMap[mes].total_t += c.total_t;
+  });
+  // Sort months chronologically
+  const MONTH_ORDER = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const fullTimeline = Object.values(monthMap).sort((a,b) => {
+    const [ma,ya] = a.mes.split(" "); const [mb,yb] = b.mes.split(" ");
+    return (parseInt(ya)*12 + MONTH_ORDER.indexOf(ma)) - (parseInt(yb)*12 + MONTH_ORDER.indexOf(mb));
+  });
 
   // Filter timeline by period
-  const timeline = filterByPeriod(fullTimeline.length > 0 ? fullTimeline : ALL_MONTHS.slice(0,5).map(mes=>({mes,ingresos:0,fee:0,neto:0})), period);
+  const timeline = filterByPeriod(fullTimeline.length > 0 ? fullTimeline : [{mes:"—",sub_t:0,total_t:0}], period);
 
   // Update comparison banner
   const compEl = document.getElementById("period-comparison");
@@ -1219,7 +1267,7 @@ function renderVentasCampanas(user, period) {
     <!-- Chart + Desglose -->
     <div class="two-col" style="margin-bottom:16px">
       <div class="chart-wrap" style="margin-bottom:0">
-        <div class="chart-title">Subtotal campaña vs Total talento por mes</div>
+        <div class="chart-title">Subtotal talento vs Total talento por mes</div>
         <div class="chart-container"><canvas id="chart-ventas-mes"></canvas></div>
       </div>
       <div class="panel" style="margin-bottom:0">
@@ -1333,8 +1381,8 @@ function renderVentasCampanas(user, period) {
     data: {
       labels: timeline.map(t => t.mes),
       datasets: [
-        { label: "Ingreso bruto", data: timeline.map(t => t.ingresos), backgroundColor: "rgba(232,56,13,0.15)", borderColor: "#E8380D", borderWidth: 1.5, borderRadius: 4 },
-        { label: "Tu neto",       data: timeline.map(t => t.neto),     backgroundColor: "#1A8C5B", borderRadius: 4 },
+        { label: "Subtotal talento", data: timeline.map(t => t.sub_t),   backgroundColor: "rgba(26,140,91,0.15)", borderColor: "#1A8C5B", borderWidth: 1.5, borderRadius: 4 },
+        { label: "Total talento",    data: timeline.map(t => t.total_t), backgroundColor: "#1D6FB8", borderRadius: 4 },
       ]
     },
     options: {
@@ -1496,6 +1544,100 @@ function showKpiModal(tipo, user) {
   modal.style.display = "flex";
   modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
 }
+
+function showDetailModal(tipo, user) {
+  const allCamps = CAMPAIGNS.filter(c => c.talento_clave === user.clave);
+
+  const configs = {
+    campanas: {
+      title: "Todas las campañas",
+      subtitle: `${allCamps.length} campaña${allCamps.length!==1?"s":""} en total`,
+      color: "#0D0D0D",
+      camps: allCamps,
+      tag: c => `<span class="camp-status ${norm(c.status)==="en proceso"?"status-active":"status-pending"}">${c.status}</span>`,
+    },
+    marcas: {
+      title: "Campañas por marca",
+      subtitle: [...new Set(allCamps.map(c=>c.marca))].join(", "),
+      color: "#7C3AED",
+      camps: allCamps,
+      tag: c => `<span style="background:#EDE9FE;color:#7C3AED;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500">${c.marca}</span>`,
+    },
+    agencias: {
+      title: "Campañas por agencia",
+      subtitle: [...new Set(allCamps.map(c=>c.agencia))].join(", "),
+      color: "#1D6FB8",
+      camps: allCamps,
+      tag: c => `<span style="background:#EFF6FF;color:#1D6FB8;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500">${c.agencia}</span>`,
+    },
+    "en proceso": {
+      title: "En proceso",
+      subtitle: "Campañas actualmente en curso",
+      color: "#1D6FB8",
+      camps: allCamps.filter(c => norm(c.status) === "en proceso"),
+      tag: c => `<span style="background:#EFF6FF;color:#1D6FB8;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500">En proceso</span>`,
+    },
+    pendiente: {
+      title: "Pendientes",
+      subtitle: "Campañas por iniciar",
+      color: "#D97706",
+      camps: allCamps.filter(c => norm(c.status) === "pendiente"),
+      tag: c => `<span class="camp-status status-pending">Pendiente</span>`,
+    },
+    finalizado: {
+      title: "Finalizadas",
+      subtitle: "Campañas completadas",
+      color: "#1A8C5B",
+      camps: allCamps.filter(c => norm(c.status) === "finalizado"),
+      tag: c => `<span style="background:var(--green-light);color:var(--green);font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500">Finalizada</span>`,
+    },
+  };
+
+  const cfg = configs[tipo] || configs.campanas;
+  const camps = cfg.camps;
+
+  document.getElementById("modal-detail-title").textContent = cfg.title;
+  document.getElementById("modal-detail-title").style.color = cfg.color;
+  document.getElementById("modal-detail-subtitle").textContent = cfg.subtitle;
+  document.getElementById("modal-detail-total-val").textContent = fmt(camps.reduce((a,c)=>a+c.subtotal,0));
+  document.getElementById("modal-detail-total-val").style.color = cfg.color;
+
+  document.getElementById("modal-detail-content").innerHTML = camps.length === 0
+    ? `<div style="text-align:center;padding:32px;color:#8A857D">No hay campañas en esta categoría.</div>`
+    : camps.map(c => `
+      <div style="padding:16px 0;border-bottom:1px solid #F0EDE8">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:3px">${c.campana}</div>
+            <div style="font-size:11px;color:#8A857D">${c.id} · ${c.agencia} · ${c.marca}</div>
+            <div style="font-size:11px;color:#8A857D;margin-top:2px">${c.fecha_inicio} → ${c.fecha_fin}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:12px">
+            ${cfg.tag(c)}
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;margin-top:4px">${fmt(c.subtotal)}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div style="background:#F7F5F2;border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Subtotal campaña</div>
+            <div style="font-size:13px;font-weight:500">${fmt(c.subtotal)}</div>
+          </div>
+          <div style="background:#F7F5F2;border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Subtotal talento</div>
+            <div style="font-size:13px;font-weight:500;color:#1A8C5B">${fmt(c.sub_t)}</div>
+          </div>
+          <div style="background:${c.por_cobrar_t>0?"#FEF3C7":"#D1FAE5"};border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Por cobrar talento</div>
+            <div style="font-size:13px;font-weight:600;color:${c.por_cobrar_t>0?"#D97706":"#1A8C5B"}">${c.por_cobrar_t>0?fmt(c.por_cobrar_t):"✓ Cobrado"}</div>
+          </div>
+        </div>
+        ${c.cfdi?`<div style="margin-top:8px;font-size:11px;color:#1A8C5B">📄 CFDI: ${c.cfdi}</div>`:`<div style="margin-top:8px;font-size:11px;color:#D97706">⚠ CFDI pendiente</div>`}
+      </div>`).join("");
+
+  const modal = document.getElementById("modal-detail");
+  modal.style.display = "flex";
+  modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+}
 </script>
 
 <!-- MODAL: Por cobrar talento -->
@@ -1512,5 +1654,19 @@ function showKpiModal(tipo, user) {
   </div>
 </div>
 
+
+<!-- MODAL: Detalle de cards -->
+<div id="modal-detail" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);align-items:center;justify-content:center">
+  <div style="background:white;border-radius:16px;padding:32px;max-width:640px;width:90%;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.2)">
+    <button onclick="document.getElementById('modal-detail').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#8A857D;line-height:1">✕</button>
+    <div id="modal-detail-title" style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:4px"></div>
+    <div id="modal-detail-subtitle" style="font-size:13px;color:#8A857D;margin-bottom:24px"></div>
+    <div id="modal-detail-content"></div>
+    <div style="margin-top:20px;padding-top:16px;border-top:2px solid #0D0D0D;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;font-weight:600">Subtotal total</span>
+      <span id="modal-detail-total-val" style="font-family:'Bebas Neue',sans-serif;font-size:28px"></span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
