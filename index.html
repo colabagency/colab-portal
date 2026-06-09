@@ -281,15 +281,71 @@
     <div class="login-tagline">Portal de Talentos · 2026</div>
   </div>
   <div class="login-right">
-    <h2>Bienvenido</h2>
-    <p>Accede con tu correo y contraseña</p>
-    <div class="field"><label>Correo electrónico</label><input type="email" id="email-input" placeholder="tu@correo.com"/></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="pass-input" placeholder="••••••••"/></div>
-    <button class="btn-enter" onclick="doLogin()">ENTRAR</button>
-    <div class="login-err" id="login-err"></div>
-    <div class="demo-hint">
-      <p>Demo — selecciona un talento</p>
-      <div class="demo-chips" id="demo-chips"></div>
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;border-bottom:1.5px solid var(--gray-200);margin-bottom:28px">
+      <button id="tab-login" onclick="switchLoginTab('login')" style="flex:1;background:none;border:none;border-bottom:2.5px solid var(--red);margin-bottom:-1.5px;padding:10px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--black);cursor:pointer">Iniciar sesión</button>
+      <button id="tab-register" onclick="switchLoginTab('register')" style="flex:1;background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;padding:10px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer">Crear cuenta</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="form-login">
+      <h2>Bienvenido</h2>
+      <p>Accede con tu correo y contraseña</p>
+      <div class="field"><label>Correo electrónico</label><input type="email" id="email-input" placeholder="tu@correo.com"/></div>
+      <div class="field">
+        <label>Contraseña</label>
+        <div style="position:relative">
+          <input type="password" id="pass-input" placeholder="••••••••" style="width:100%;padding:14px 44px 14px 16px;background:white;border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
+          <button onclick="togglePass('pass-input',this)" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);padding:0;line-height:1">👁</button>
+        </div>
+      </div>
+      <div style="text-align:right;margin-top:-8px;margin-bottom:16px">
+        <button onclick="switchLoginTab('forgot')" style="background:none;border:none;font-size:12px;color:var(--gray-500);cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">¿Olvidaste tu contraseña?</button>
+      </div>
+      <button class="btn-enter" onclick="doLogin()">ENTRAR</button>
+      <div class="login-err" id="login-err"></div>
+      <div class="demo-hint">
+        <p>Demo — selecciona un talento</p>
+        <div class="demo-chips" id="demo-chips"></div>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="form-register" style="display:none">
+      <h2>Crear cuenta</h2>
+      <p>Tu correo debe estar registrado con CO/LAB</p>
+      <div class="field"><label>Correo electrónico</label><input type="email" id="reg-email" placeholder="tu@correo.com"/></div>
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <div style="position:relative">
+          <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" style="width:100%;padding:14px 44px 14px 16px;background:white;border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
+          <button onclick="togglePass('reg-pass',this)" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);padding:0;line-height:1">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirmar contraseña</label>
+        <div style="position:relative">
+          <input type="password" id="reg-pass2" placeholder="Repite tu contraseña" style="width:100%;padding:14px 44px 14px 16px;background:white;border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
+          <button onclick="togglePass('reg-pass2',this)" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);padding:0;line-height:1">👁</button>
+        </div>
+      </div>
+      <div id="reg-strength" style="margin-top:-10px;margin-bottom:14px;font-size:11px;height:16px"></div>
+      <button class="btn-enter" onclick="doRegister()">CREAR CUENTA</button>
+      <div class="login-err" id="reg-err"></div>
+      <div id="reg-ok" style="font-size:13px;color:var(--green);text-align:center;margin-top:12px;display:none">✅ Cuenta creada. Ya puedes iniciar sesión.</div>
+    </div>
+
+    <!-- FORGOT PASSWORD FORM -->
+    <div id="form-forgot" style="display:none">
+      <h2>Restablecer</h2>
+      <p>Ingresa tu correo y te enviaremos una contraseña temporal</p>
+      <div class="field"><label>Correo electrónico</label><input type="email" id="forgot-email" placeholder="tu@correo.com"/></div>
+      <button class="btn-enter" onclick="doForgot()">ENVIAR</button>
+      <div class="login-err" id="forgot-err"></div>
+      <div id="forgot-ok" style="font-size:13px;color:var(--green);text-align:center;margin-top:12px;display:none">✅ Revisa tu correo.</div>
+      <div style="text-align:center;margin-top:16px">
+        <button onclick="switchLoginTab('login')" style="background:none;border:none;font-size:12px;color:var(--gray-500);cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">← Volver al inicio de sesión</button>
+      </div>
     </div>
   </div>
 </div>
@@ -479,14 +535,12 @@ function loadFallbackData() {
     gerardo:        { clave:"CA011", nombre:"GERARDO VILLA",          apodo:"Gerardo",     email:"gervilla13@gmail.com",          pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Moda y Belleza, Lifestyle", instagram:"gerardovillab", tiktok:"gerardovillab", antiguedad:"0 meses" },
   };
   CAMPAIGNS = [
-    { id:"26-1001", talento_clave:"CA003", marca:"NIVEA",    agencia:"FBWORKERS",      campana:"NIVEA SUN UDI",      fecha_inicio:"31 Mar 2026", fecha_fin:"30 Abr 2026", status:"En Proceso",  subtotal:40000,   fee:8000,   sub_t:32000,   iva:5120,   iva_ret:3411.20, isr:3200,    total_t:30508.80,  cobrado_t:0, por_cobrar_t:30508.80,  cfdi:"UDI NIVEA SUN.pdf" },
-    { id:"26-1002", talento_clave:"CA004", marca:"NIVEA",    agencia:"FBWORKERS",      campana:"NIVEA SUN UV STICK", fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso",  subtotal:145000,  fee:36250,  sub_t:108750,  iva:17400,  iva_ret:11592.75,isr:1359.38, total_t:113197.88, cobrado_t:0, por_cobrar_t:113197.88, cfdi:"" },
-    { id:"26-1003", talento_clave:"CA008", marca:"NIVEA",    agencia:"FBWORKERS",      campana:"NIVEA SUN UV STICK", fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso",  subtotal:85000,   fee:21250,  sub_t:63750,   iva:10200,  iva_ret:6795.75, isr:6375,    total_t:60779.25,  cobrado_t:0, por_cobrar_t:60779.25,  cfdi:"" },
-    { id:"26-1005", talento_clave:"CA004", marca:"F1",       agencia:"AGUITA DE LIMON",campana:"F1 HOT",             fecha_inicio:"15 Jul 2026", fecha_fin:"15 Ago 2026", status:"Pendiente",   subtotal:400000,  fee:100000, sub_t:300000,  iva:48000,  iva_ret:31980,   isr:3750,    total_t:312270,    cobrado_t:0, por_cobrar_t:312270,    cfdi:"" },
-    { id:"26-1006", talento_clave:"CA003", marca:"ADIDAS",   agencia:"BE GROUP",       campana:"ADIDAS LOVE",        fecha_inicio:"1 Jun 2026",  fecha_fin:"30 Jun 2026", status:"Finalizado",  subtotal:148959,  fee:29791.80,sub_t:119167.20,iva:19066.75,iva_ret:12703.22,isr:11916.72,total_t:113614.01, cobrado_t:0, por_cobrar_t:113614.01, cfdi:"" },
-    { id:"26-1007", talento_clave:"CA011", marca:"NBA",      agencia:"AGUITA DE LIMON",campana:"NBA GRA",            fecha_inicio:"16 Jul 2026", fecha_fin:"12 Ago 2026", status:"En Proceso",  subtotal:349631,  fee:87407.75,sub_t:262223.25,iva:41955.72,iva_ret:0,       isr:0,       total_t:304178.97, cobrado_t:0, por_cobrar_t:304178.97, cfdi:"" },
-    { id:"26-1008", talento_clave:"CA008", marca:"TOUS",     agencia:"PORTERNOBELLY",  campana:"TOUS LIVE",          fecha_inicio:"1 Jun 2026",  fecha_fin:"30 Jun 2026", status:"Finalizado",  subtotal:252952,  fee:63238,  sub_t:189714,  iva:30354.24,iva_ret:20223.51,isr:18971.40,total_t:180873.33, cobrado_t:0, por_cobrar_t:180873.33, cfdi:"" },
-    { id:"26-1009", talento_clave:"CA003", marca:"TITLEIST", agencia:"MAGMA",          campana:"TITLEIST DRIVER 1",  fecha_inicio:"29 Sep 2026", fecha_fin:"29 Oct 2026", status:"Pendiente",   subtotal:326425,  fee:65285,  sub_t:261140,  iva:41782.40,iva_ret:27837.52,isr:26114,   total_t:248970.88, cobrado_t:0, por_cobrar_t:248970.88, cfdi:"" },
+    { id:"26-1001", talento_clave:"CA003", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",    fecha_inicio:"31 Mar 2026", fecha_fin:"30 Abr 2026", status:"Finalizado",  subtotal:40000,   fee:8000,   sub_t:32000,   iva:5120,    iva_ret:3411.20, isr:3200,   total_t:30508.80,  cobrado_t:0, por_cobrar_t:30508.80,  cfdi:"UDI NIVEA SUN.pdf" },
+    { id:"26-1002", talento_clave:"CA004", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK",        fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso",  subtotal:145000,  fee:36250,  sub_t:108750,  iva:17400,   iva_ret:11592.75,isr:1359.38,total_t:113197.88, cobrado_t:0, por_cobrar_t:113197.88, cfdi:"" },
+    { id:"26-1003", talento_clave:"CA008", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK",        fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso",  subtotal:85000,   fee:21250,  sub_t:63750,   iva:10200,   iva_ret:6795.75, isr:6375,   total_t:60779.25,  cobrado_t:0, por_cobrar_t:60779.25,  cfdi:"" },
+    { id:"26-1010", talento_clave:"CA004", marca:"CAROLIN HERRERA", agencia:"VKNG GROUP", campana:"EVENTO 212 MANISON CH",     fecha_inicio:"4 Jun 2026",  fecha_fin:"4 Jun 2026",  status:"Finalizado",  subtotal:100000,  fee:25000,  sub_t:75000,   iva:12000,   iva_ret:7995,    isr:937.50, total_t:78067.50,  cobrado_t:0, por_cobrar_t:78067.50,  cfdi:"" },
+    { id:"26-1011", talento_clave:"CA008", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",    fecha_inicio:"1 Jun 2026",  fecha_fin:"30 Jun 2026", status:"Pendiente",   subtotal:20000,   fee:5000,   sub_t:15000,   iva:2400,    iva_ret:1599,    isr:1500,   total_t:14301,     cobrado_t:0, por_cobrar_t:14301,     cfdi:"" },
+    { id:"26-1013", talento_clave:"CA003", marca:"MINI COOPER",     agencia:"N/A",        campana:"PAUL SMITH X MINI COOPER",  fecha_inicio:"3 Jun 2026",  fecha_fin:"3 Jun 2026",  status:"Finalizado",  subtotal:55000,   fee:11000,  sub_t:44000,   iva:7040,    iva_ret:4690.40, isr:4400,   total_t:41949.60,  cobrado_t:0, por_cobrar_t:41949.60,  cfdi:"" },
   ];
 }
 
@@ -661,11 +715,111 @@ loadSheetData().then(ok => {
   if (ok) buildDemoChips();
 });
 
+
+/* ════════════════════════════════════════
+   AUTH TABS & REGISTER
+════════════════════════════════════════ */
+function switchLoginTab(tab) {
+  // Hide all forms
+  ["form-login","form-register","form-forgot"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  // Reset tab styles
+  const tabLogin = document.getElementById("tab-login");
+  const tabReg   = document.getElementById("tab-register");
+  if (tabLogin) { tabLogin.style.borderBottomColor = "transparent"; tabLogin.style.color = "var(--gray-500)"; }
+  if (tabReg)   { tabReg.style.borderBottomColor   = "transparent"; tabReg.style.color   = "var(--gray-500)"; }
+
+  if (tab === "login") {
+    document.getElementById("form-login").style.display = "block";
+    if (tabLogin) { tabLogin.style.borderBottomColor = "var(--red)"; tabLogin.style.color = "var(--black)"; }
+  } else if (tab === "register") {
+    document.getElementById("form-register").style.display = "block";
+    if (tabReg) { tabReg.style.borderBottomColor = "var(--red)"; tabReg.style.color = "var(--black)"; }
+    // Listen for password strength
+    const p = document.getElementById("reg-pass");
+    if (p && !p._strengthBound) {
+      p._strengthBound = true;
+      p.addEventListener("input", () => {
+        const v = p.value;
+        const el = document.getElementById("reg-strength");
+        if (!v) { el.textContent = ""; return; }
+        if (v.length < 6)  { el.textContent = "⚠ Mínimo 6 caracteres"; el.style.color = "var(--red)"; }
+        else if (v.length < 8) { el.textContent = "Regular — agrega más caracteres"; el.style.color = "var(--amber)"; }
+        else { el.textContent = "✓ Contraseña segura"; el.style.color = "var(--green)"; }
+      });
+    }
+  } else if (tab === "forgot") {
+    document.getElementById("form-forgot").style.display = "block";
+  }
+}
+
+function togglePass(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === "password") { input.type = "text"; btn.textContent = "🙈"; }
+  else { input.type = "password"; btn.textContent = "👁"; }
+}
+
+// Passwords stored in localStorage (per device) — fallback when Sheets not writable
+function getSavedPasswords() {
+  try { return JSON.parse(localStorage.getItem("colab_passwords") || "{}"); } catch { return {}; }
+}
+function savePassword(email, pw) {
+  const saved = getSavedPasswords();
+  saved[email.toLowerCase()] = pw;
+  localStorage.setItem("colab_passwords", JSON.stringify(saved));
+}
+
+function doRegister() {
+  const email  = (document.getElementById("reg-email").value || "").trim().toLowerCase();
+  const pass   = document.getElementById("reg-pass").value;
+  const pass2  = document.getElementById("reg-pass2").value;
+  const errEl  = document.getElementById("reg-err");
+  const okEl   = document.getElementById("reg-ok");
+  errEl.textContent = ""; okEl.style.display = "none";
+
+  if (!email) { errEl.textContent = "Ingresa tu correo"; return; }
+  if (pass.length < 6) { errEl.textContent = "La contraseña debe tener al menos 6 caracteres"; return; }
+  if (pass !== pass2)  { errEl.textContent = "Las contraseñas no coinciden"; return; }
+
+  // Verify email exists in TALENTS
+  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
+  if (!user) { errEl.textContent = "Este correo no está registrado en CO/LAB. Contacta a tu manager."; return; }
+
+  // Save new password
+  savePassword(email, pass);
+  okEl.style.display = "block";
+  setTimeout(() => switchLoginTab("login"), 1800);
+}
+
+function doForgot() {
+  const email  = (document.getElementById("forgot-email").value || "").trim().toLowerCase();
+  const errEl  = document.getElementById("forgot-err");
+  const okEl   = document.getElementById("forgot-ok");
+  errEl.textContent = ""; okEl.style.display = "none";
+
+  if (!email) { errEl.textContent = "Ingresa tu correo"; return; }
+  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
+  if (!user) { errEl.textContent = "Este correo no está registrado"; return; }
+
+  // Reset to default password
+  savePassword(email, "colab2026");
+  okEl.textContent = "✅ Tu contraseña fue restablecida a: colab2026";
+  okEl.style.display = "block";
+}
+
 function doLogin() {
   const email = document.getElementById("email-input").value.trim().toLowerCase();
   const pw = document.getElementById("pass-input").value;
   const err = document.getElementById("login-err");
-  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email && t.pw === pw);
+  // Check saved (custom) password first, then fallback to default
+  const saved = getSavedPasswords();
+  const effectivePw = saved[email] || null;
+  const user = Object.values(TALENTS).find(t => {
+    if (t.email.toLowerCase() !== email) return false;
+    return effectivePw ? pw === effectivePw : pw === t.pw;
+  });
   if (!user) { err.textContent = "Correo o contraseña incorrectos"; return; }
   err.textContent = "";
   currentUser = user;
