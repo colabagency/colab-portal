@@ -814,6 +814,23 @@ function doLogin() {
   const email = document.getElementById("email-input").value.trim().toLowerCase();
   const pw = document.getElementById("pass-input").value;
   const err = document.getElementById("login-err");
+
+  // ── Admin hardcodeado — siempre funciona ──
+  const ADMINS = [
+    { clave:"ADMIN", nombre:"RICARDO SALIDO", apodo:"Ricardo", email:"ricardo.salido@grupocfa.com", pw:"Savi059_", manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", antiguedad:"—" }
+  ];
+  const admin = ADMINS.find(a => a.email.toLowerCase() === email && a.pw === pw);
+  if (admin) {
+    err.textContent = "";
+    currentUser = admin;
+    currentPlatform = "ig";
+    renderAll(admin);
+    document.getElementById("login-page").style.display = "none";
+    document.getElementById("dash-page").style.display = "block";
+    window.scrollTo(0, 0);
+    return;
+  }
+
   // Check saved (custom) password first, then fallback to default
   const saved = getSavedPasswords();
   const effectivePw = saved[email] || null;
