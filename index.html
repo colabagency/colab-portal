@@ -1007,50 +1007,7 @@ function renderCampanas(user, camps) {
   document.getElementById("camp-count").textContent = camps.length + " total";
   document.getElementById("camp-table").innerHTML = camps.length === 0
     ? `<div class="empty-camp">Sin campañas asignadas aún.</div>`
-    : `<div style="overflow-x:auto"><table class="campaign-table">
-        <thead><tr>
-          <th>Campaña</th><th>Vigencia</th>
-          <th style="text-align:right">Subtotal campaña</th>
-          <th style="text-align:right">Fee agencia</th>
-          <th style="text-align:right">Subtotal talento</th>
-          <th style="text-align:right">IVA</th>
-          <th style="text-align:right">IVA Ret.</th>
-          <th style="text-align:right">ISR Ret.</th>
-          <th style="text-align:right">Total talento</th>
-          <th style="text-align:right">Cobrado</th>
-          <th style="text-align:right">Por cobrar</th>
-          <th>Status</th>
-        </tr></thead>
-        <tbody>${camps.map(c=>`<tr>
-          <td><div class="camp-name">${c.campana}</div><div class="camp-marca">${c.agencia} · ${c.marca}</div></td>
-          <td style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio}<br>→ ${c.fecha_fin}</td>
-          <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
-          <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
-          <td style="text-align:right;color:var(--green);font-weight:500">${fmt(c.sub_t)}</td>
-          <td style="text-align:right;font-size:12px">${fmt(c.iva)}</td>
-          <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.iva_ret)}</td>
-          <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.isr)}</td>
-          <td style="text-align:right;font-weight:600">${fmt(c.total_t)}</td>
-          <td style="text-align:right;color:var(--green);font-size:12px">${c.cobrado_t>0?fmt(c.cobrado_t):"—"}</td>
-          <td style="text-align:right;color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</td>
-          <td><span class="camp-status ${norm(c.status)==="en proceso"?"status-active":"status-pending"}">${c.status}</span>${c.cfdi?`<div style="font-size:10px;color:var(--gray-500);margin-top:4px">📄 CFDI</div>`:""}</td>
-        </tr>`).join("")}</tbody>
-        <tfoot>
-          <tr style="border-top:2px solid var(--black);background:#FAFAF8">
-            <td colspan="2" style="font-family:'Bebas Neue',sans-serif;font-size:14px;padding-top:14px;padding-bottom:10px;letter-spacing:1px">TOTAL</td>
-            <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(sub)}</td>
-            <td style="text-align:right;color:var(--red);font-weight:700;padding-top:14px">− ${fmt(feeAmt)}</td>
-            <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${fmt(subT)}</td>
-            <td style="text-align:right;font-weight:600;padding-top:14px">${fmt(ivaAmt)}</td>
-            <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(ivaRet)}</td>
-            <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(isrRet)}</td>
-            <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(totalT)}</td>
-            <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${cobradoT>0?fmt(cobradoT):"—"}</td>
-            <td style="text-align:right;color:var(--amber);font-weight:700;padding-top:14px">${fmt(porCobT)}</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table></div>`;
+    : renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, totalT, cobradoT, porCobT);
 
   document.getElementById("fee-total").textContent = fmtK(totalT);
   document.getElementById("fee-desc").textContent = `Total talento después de retenciones`;
@@ -1073,6 +1030,120 @@ function renderCampanas(user, camps) {
 /* ════════════════════════════════════════
    KPIs
 ════════════════════════════════════════ */
+
+function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, totalT, cobradoT, porCobT) {
+  const isMobile = window.innerWidth <= 640;
+
+  if (isMobile) {
+    // ── MOBILE: card layout ──
+    return `<div>
+      ${camps.map(c => {
+        const sc = norm(c.status);
+        const color = sc==="finalizado"?"var(--green)":sc==="en proceso"?"var(--blue)":"var(--amber)";
+        const bg    = sc==="finalizado"?"var(--green-light)":sc==="en proceso"?"var(--blue-light)":"var(--amber-light)";
+        return `<div style="border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:10px;background:white">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <div>
+              <div style="font-weight:600;font-size:14px;margin-bottom:2px">${c.campana}</div>
+              <div style="font-size:11px;color:var(--gray-500)">${c.agencia} · ${c.marca}</div>
+              <div style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio} → ${c.fecha_fin}</div>
+            </div>
+            <span style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bg};color:${color};white-space:nowrap">${c.status}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px">
+              <div style="color:var(--gray-500);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Subtotal campaña</div>
+              <div style="font-weight:600">${fmt(c.subtotal)}</div>
+            </div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px">
+              <div style="color:var(--gray-500);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Fee agencia</div>
+              <div style="color:var(--red);font-weight:500">− ${fmt(c.fee)}</div>
+            </div>
+            <div style="background:var(--green-light);border-radius:8px;padding:10px">
+              <div style="color:var(--green);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Subtotal talento</div>
+              <div style="color:var(--green);font-weight:600">${fmt(c.sub_t)}</div>
+            </div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px">
+              <div style="color:var(--gray-500);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Total talento</div>
+              <div style="font-weight:600">${fmt(c.total_t)}</div>
+            </div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px">
+              <div style="color:var(--gray-500);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">IVA</div>
+              <div>${fmt(c.iva)}</div>
+            </div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px">
+              <div style="color:var(--gray-500);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">IVA Ret. / ISR Ret.</div>
+              <div style="color:var(--gray-500)">− ${fmt(c.iva_ret)} / − ${fmt(c.isr)}</div>
+            </div>
+            <div style="background:${c.por_cobrar_t>0?"var(--amber-light)":"var(--green-light)"};border-radius:8px;padding:10px;grid-column:1/-1">
+              <div style="color:var(--gray-500);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Por cobrar talento</div>
+              <div style="font-weight:700;font-size:16px;color:${c.por_cobrar_t>0?"var(--amber)":"var(--green)"}">${c.por_cobrar_t>0?fmt(c.por_cobrar_t):"✓ Cobrado"}</div>
+            </div>
+          </div>
+          ${c.cfdi?`<div style="margin-top:8px;font-size:11px;color:var(--green)">📄 ${c.cfdi}</div>`:""}
+        </div>`;
+      }).join("")}
+      <!-- Totales mobile -->
+      <div style="border:2px solid var(--black);border-radius:12px;padding:16px;background:#FAFAF8;margin-top:4px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;margin-bottom:12px">TOTALES</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+          <div><div style="color:var(--gray-500);margin-bottom:2px">Subtotal campaña</div><div style="font-weight:600">${fmt(sub)}</div></div>
+          <div><div style="color:var(--gray-500);margin-bottom:2px">Fee agencia</div><div style="color:var(--red);font-weight:600">− ${fmt(feeAmt)}</div></div>
+          <div><div style="color:var(--gray-500);margin-bottom:2px">Subtotal talento</div><div style="color:var(--green);font-weight:600">${fmt(subT)}</div></div>
+          <div><div style="color:var(--gray-500);margin-bottom:2px">Total talento</div><div style="font-weight:700">${fmt(totalT)}</div></div>
+          <div style="grid-column:1/-1"><div style="color:var(--gray-500);margin-bottom:2px">Por cobrar talento</div><div style="color:var(--amber);font-weight:700;font-size:16px">${fmt(porCobT)}</div></div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── DESKTOP: full table ──
+  return `<div style="overflow-x:auto"><table class="campaign-table">
+    <thead><tr>
+      <th>Campaña</th><th>Vigencia</th>
+      <th style="text-align:right">Subtotal campaña</th>
+      <th style="text-align:right">Fee agencia</th>
+      <th style="text-align:right">Subtotal talento</th>
+      <th style="text-align:right">IVA</th>
+      <th style="text-align:right">IVA Ret.</th>
+      <th style="text-align:right">ISR Ret.</th>
+      <th style="text-align:right">Total talento</th>
+      <th style="text-align:right">Cobrado</th>
+      <th style="text-align:right">Por cobrar</th>
+      <th>Status</th>
+    </tr></thead>
+    <tbody>${camps.map(c=>`<tr>
+      <td><div class="camp-name">${c.campana}</div><div class="camp-marca">${c.agencia} · ${c.marca}</div></td>
+      <td style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio}<br>→ ${c.fecha_fin}</td>
+      <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
+      <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
+      <td style="text-align:right;color:var(--green);font-weight:500">${fmt(c.sub_t)}</td>
+      <td style="text-align:right;font-size:12px">${fmt(c.iva)}</td>
+      <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.iva_ret)}</td>
+      <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.isr)}</td>
+      <td style="text-align:right;font-weight:600">${fmt(c.total_t)}</td>
+      <td style="text-align:right;color:var(--green);font-size:12px">${c.cobrado_t>0?fmt(c.cobrado_t):"—"}</td>
+      <td style="text-align:right;color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</td>
+      <td><span class="camp-status ${norm(c.status)==="en proceso"?"status-active":"status-pending"}">${c.status}</span>${c.cfdi?`<div style="font-size:10px;color:var(--gray-500);margin-top:4px">📄 CFDI</div>`:""}</td>
+    </tr>`).join("")}</tbody>
+    <tfoot>
+      <tr style="border-top:2px solid var(--black);background:#FAFAF8">
+        <td colspan="2" style="font-family:'Bebas Neue',sans-serif;font-size:14px;padding-top:14px;padding-bottom:10px;letter-spacing:1px">TOTAL</td>
+        <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(sub)}</td>
+        <td style="text-align:right;color:var(--red);font-weight:700;padding-top:14px">− ${fmt(feeAmt)}</td>
+        <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${fmt(subT)}</td>
+        <td style="text-align:right;font-weight:600;padding-top:14px">${fmt(ivaAmt)}</td>
+        <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(ivaRet)}</td>
+        <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(isrRet)}</td>
+        <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(totalT)}</td>
+        <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${cobradoT>0?fmt(cobradoT):"—"}</td>
+        <td style="text-align:right;color:var(--amber);font-weight:700;padding-top:14px">${fmt(porCobT)}</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table></div>`;
+}
+
 function renderKpis(user, camps) {
   const sub      = camps.reduce((a,c)=>a+c.subtotal,    0);
   const feeAmt   = camps.reduce((a,c)=>a+c.fee,         0);
