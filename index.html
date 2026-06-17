@@ -483,6 +483,7 @@ window.addEventListener("resize", () => {
 const SHEET_ID = "17NdtOJX1CRdtuDr592ekTQbyBT_bfivTEOhgdSUgOxU";
 const API_KEY  = "AIzaSyCLshttTdmHcknVI2Zh0tKzRnVXJuZpMvk";
 const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
+const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbx4BkkQCblXqRoz8nXaTYW2EWYrGnstoexgmgmVSimriAVNQYkCCTbTG93KoB9fFvjgiw/exec";
 
 // Runtime data — populated from Sheets on load
 let TALENTS   = {};
@@ -756,11 +757,34 @@ function togglePass(inputId, btn) {
   else { input.type = "password"; btn.textContent = "👁"; }
 }
 
-// Passwords stored in localStorage (per device) — fallback when Sheets not writable
+// Passwords stored persistently in the "Usuarios" sheet via Apps Script Web App
+async function authApiCall(payload) {
+  try {
+    const res = await fetch(AUTH_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Auth API error:", err);
+    return { ok: false, error: "network" };
+  }
+}
+
+async function checkLoginRemote(email, password) {
+  return authApiCall({ action: "login", email, password });
+}
+
+async function savePasswordRemote(email, password, clave) {
+  return authApiCall({ action: "register", email, password, clave });
+}
+
+// Local cache so the same device doesn't need to hit the network every keystroke/login retry
 function getSavedPasswords() {
   try { return JSON.parse(localStorage.getItem("colab_passwords") || "{}"); } catch { return {}; }
 }
-function savePassword(email, pw) {
+function cachePasswordLocally(email, pw) {
   const saved = getSavedPasswords();
   saved[email.toLowerCase()] = pw;
   localStorage.setItem("colab_passwords", JSON.stringify(saved));
@@ -782,10 +806,16 @@ function doRegister() {
   const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
   if (!user) { errEl.textContent = "Este correo no está registrado en CO/LAB. Contacta a tu manager."; return; }
 
-  // Save new password
-  savePassword(email, pass);
-  okEl.style.display = "block";
-  setTimeout(() => switchLoginTab("login"), 1800);
+  const btn = document.querySelector('#form-register .btn-enter');
+  if (btn) { btn.disabled = true; btn.textContent = "CREANDO..."; }
+
+  savePasswordRemote(email, pass, user.clave).then(resp => {
+    if (btn) { btn.disabled = false; btn.textContent = "CREAR CUENTA"; }
+    if (!resp.ok) { errEl.textContent = "No se pudo guardar. Intenta de nuevo."; return; }
+    cachePasswordLocally(email, pass);
+    okEl.style.display = "block";
+    setTimeout(() => switchLoginTab("login"), 1800);
+  });
 }
 
 function doForgot() {
@@ -798,10 +828,16 @@ function doForgot() {
   const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
   if (!user) { errEl.textContent = "Este correo no está registrado"; return; }
 
-  // Reset to default password
-  savePassword(email, "colab2026");
-  okEl.textContent = "✅ Tu contraseña fue restablecida a: colab2026";
-  okEl.style.display = "block";
+  const btn = document.querySelector('#form-forgot .btn-enter');
+  if (btn) { btn.disabled = true; btn.textContent = "ENVIANDO..."; }
+
+  savePasswordRemote(email, "colab2026", user.clave).then(resp => {
+    if (btn) { btn.disabled = false; btn.textContent = "ENVIAR"; }
+    if (!resp.ok) { errEl.textContent = "No se pudo restablecer. Intenta de nuevo."; return; }
+    cachePasswordLocally(email, "colab2026");
+    okEl.textContent = "✅ Tu contraseña fue restablecida a: colab2026";
+    okEl.style.display = "block";
+  });
 }
 
 
@@ -907,10 +943,11 @@ function adminSwitchTo(email) {
   window.scrollTo(0, 0);
 }
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById("email-input").value.trim().toLowerCase();
   const pw = document.getElementById("pass-input").value;
   const err = document.getElementById("login-err");
+  const btn = document.querySelector('#form-login .btn-enter');
 
   // ── Admin hardcodeado — siempre funciona ──
   const ADMINS = [
@@ -952,15 +989,33 @@ function doLogin() {
     return;
   }
 
-  // Check saved (custom) password first, then fallback to default
-  const saved = getSavedPasswords();
-  const effectivePw = saved[email] || null;
-  const user = Object.values(TALENTS).find(t => {
-    if (t.email.toLowerCase() !== email) return false;
-    return effectivePw ? pw === effectivePw : pw === t.pw;
-  });
+  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
   if (!user) { err.textContent = "Correo o contraseña incorrectos"; return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = "VERIFICANDO..."; }
   err.textContent = "";
+
+  const resp = await checkLoginRemote(email, pw);
+
+  let valid = false;
+  if (resp.ok && resp.hasCustomPassword) {
+    // User has set a custom password in the sheet — must match exactly
+    valid = resp.valid;
+    if (valid) cachePasswordLocally(email, pw);
+  } else if (resp.ok && !resp.hasCustomPassword) {
+    // No custom password yet — fall back to default temp password
+    valid = (pw === user.pw);
+  } else {
+    // Network/API failure — fall back to local cache or default password
+    const saved = getSavedPasswords();
+    const cachedPw = saved[email] || null;
+    valid = cachedPw ? (pw === cachedPw) : (pw === user.pw);
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = "ENTRAR"; }
+
+  if (!valid) { err.textContent = "Correo o contraseña incorrectos"; return; }
+
   currentUser = user;
   currentPlatform = "ig";
   renderAll(user);
