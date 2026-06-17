@@ -110,10 +110,13 @@
   .fee-row-val { font-weight: 500; color: white; }
   .fee-row-val.green { color: #4ADE80; }
   .fee-row-val.red { color: #F87171; }
-  .campaign-table { width: 100%; border-collapse: collapse; }
-  .campaign-table th { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); text-align: left; padding: 0 0 10px; border-bottom: 1px solid var(--gray-100); }
-  .campaign-table td { font-size: 13px; padding: 12px 0; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+  .campaign-table { width: 100%; border-collapse: collapse; table-layout: auto; }
+  .campaign-table th { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); text-align: left; padding: 0 8px 10px 0; border-bottom: 1px solid var(--gray-100); white-space: nowrap; }
+  .campaign-table td { font-size: 13px; padding: 12px 8px 12px 0; border-bottom: 1px solid var(--gray-100); vertical-align: top; white-space: nowrap; }
+  .campaign-table th:last-child, .campaign-table td:last-child { padding-right: 0; }
   .campaign-table tr:last-child td { border-bottom: none; }
+  .campaign-table td:first-child { white-space: normal; min-width: 140px; }
+  .campaign-table th:first-child { white-space: normal; }
   .camp-name { font-weight: 500; }
   .camp-marca { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
   .camp-amount { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.5px; }
