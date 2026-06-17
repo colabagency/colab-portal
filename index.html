@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>
+  (function() {
+    try {
+      const saved = localStorage.getItem("colab_theme");
+      const theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    } catch (e) {}
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CO/LAB — Portal de Talentos</title>
@@ -18,7 +27,57 @@
     --purple: #7C3AED; --purple-light: #EDE9FE;
     --blue: #1D6FB8; --blue-light: #EFF6FF;
     --pink: #BE185D; --pink-light: #FCE7F3;
+    /* Semantic theme tokens (light mode default) */
+    --bg-page: var(--off-white);
+    --bg-surface: #FFFFFF;
+    --bg-surface-2: var(--gray-100);
+    --text-primary: var(--black);
+    --text-secondary: var(--gray-500);
+    --border-color: var(--gray-200);
+    --border-color-soft: var(--gray-100);
   }
+  [data-theme="dark"] {
+    --bg-page: #16140F;
+    --bg-surface: #211E18;
+    --bg-surface-2: #2A271F;
+    --text-primary: #F2EFE9;
+    --text-secondary: #A39C8E;
+    --border-color: #38342B;
+    --border-color-soft: #2A271F;
+    --off-white: #16140F;
+    --gray-100: #2A271F;
+    --gray-200: #38342B;
+    --gray-500: #A39C8E;
+  }
+  [data-theme="dark"] body { background: var(--bg-page); color: var(--text-primary); }
+  [data-theme="dark"] .login-right { background: var(--bg-page); }
+  [data-theme="dark"] .kpi-card.accent { background: var(--black) !important; border-color: var(--black) !important; }
+  [data-theme="dark"] .dash-inner, [data-theme="dark"] #dash-page { background: var(--bg-page); }
+  [data-theme="dark"] .camp-name, [data-theme="dark"] .camp-amount,
+  [data-theme="dark"] .kpi-val, [data-theme="dark"] h1, [data-theme="dark"] h2 { color: var(--text-primary); }
+  [data-theme="dark"] .campaign-table td, [data-theme="dark"] .history-table td { color: var(--text-primary); border-color: var(--border-color-soft) !important; }
+  [data-theme="dark"] .campaign-table th, [data-theme="dark"] .history-table th { border-color: var(--border-color-soft) !important; }
+  [data-theme="dark"] div[style*="background:#F7F5F2"],
+  [data-theme="dark"] div[style*="background: #F7F5F2"],
+  [data-theme="dark"] div[style*="background:var(--gray-100)"] { background: var(--bg-surface-2) !important; }
+  [data-theme="dark"] .ppill { color: var(--text-secondary); }
+  [data-theme="dark"] .ppill.active { background: var(--red) !important; color: white !important; }
+  [data-theme="dark"] .field input { color: var(--text-primary); }
+  [data-theme="dark"] .field input::placeholder { color: var(--text-secondary); opacity: 0.6; }
+  [data-theme="dark"] .demo-chip.active { background: var(--red) !important; color: white !important; }
+  [data-theme="dark"] .login-left::before { color: rgba(232,56,13,0.08); }
+  [data-theme="dark"] #modal-cobrar > div, [data-theme="dark"] #modal-detail > div {
+    background: var(--bg-surface) !important; color: var(--text-primary);
+  }
+
+  .theme-toggle {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2); background: transparent;
+    color: var(--gray-500); cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .theme-toggle:hover { border-color: var(--red); color: var(--red); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--black); }
 
@@ -41,7 +100,7 @@
   .login-right p { font-size: 13px; color: var(--gray-500); margin-bottom: 36px; }
   .field { margin-bottom: 18px; }
   .field label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 8px; }
-  .field input { width: 100%; padding: 14px 16px; background: white; border: 1.5px solid var(--gray-200); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--black); transition: border-color 0.2s; outline: none; }
+  .field input { width: 100%; padding: 14px 16px; background: var(--bg-surface); border: 1.5px solid var(--gray-200); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--black); transition: border-color 0.2s; outline: none; }
   .field input:focus { border-color: var(--red); }
   .btn-enter { width: 100%; padding: 16px; background: var(--red); color: white; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; margin-top: 8px; }
   .btn-enter:hover { background: var(--red-dark); }
@@ -49,7 +108,7 @@
   .demo-hint { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--gray-200); }
   .demo-hint p { font-size: 11px; color: var(--gray-500); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
   .demo-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-  .demo-chip { padding: 6px 14px; border: 1px solid var(--gray-200); border-radius: 50px; font-size: 12px; color: var(--gray-700); cursor: pointer; background: white; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .demo-chip { padding: 6px 14px; border: 1px solid var(--gray-200); border-radius: 50px; font-size: 12px; color: var(--gray-700); cursor: pointer; background: var(--bg-surface); transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
   .demo-chip:hover, .demo-chip.active { background: var(--red); color: white; border-color: var(--red); }
 
   /* TOPBAR */
@@ -78,7 +137,7 @@
 
   /* SHARED COMPONENTS */
   .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
-  .kpi-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; transition: transform 0.15s; animation: fadeUp 0.4s ease both; }
+  .kpi-card { background: var(--bg-surface); border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; transition: transform 0.15s; animation: fadeUp 0.4s ease both; }
   .kpi-card:hover { transform: translateY(-2px); }
   .kpi-card.accent { background: var(--black); border-color: var(--black); }
   .kpi-label { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 6px; }
@@ -88,10 +147,10 @@
   .kpi-sub { font-size: 11px; color: var(--gray-500); margin-top: 5px; }
   .kpi-card.accent .kpi-sub { color: rgba(255,255,255,0.3); }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .panel { background: white; border-radius: 12px; padding: 24px; border: 1px solid var(--gray-200); animation: fadeUp 0.4s ease both; }
+  .panel { background: var(--bg-surface); border-radius: 12px; padding: 24px; border: 1px solid var(--gray-200); animation: fadeUp 0.4s ease both; }
   .panel-title { font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
   .status-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
-  .status-item { background: white; border: 1px solid var(--gray-200); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+  .status-item { background: var(--bg-surface); border: 1px solid var(--gray-200); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
   .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .status-item-text { font-size: 12px; color: var(--gray-500); }
   .status-item-text strong { display: block; font-size: 16px; color: var(--black); font-weight: 500; margin-bottom: 1px; }
@@ -125,14 +184,14 @@
 
   /* PERFORMANCE SECTION */
   .perf-platform-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
-  .ptab { padding: 7px 18px; border-radius: 50px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--gray-200); color: var(--gray-500); background: white; transition: all 0.15s; }
+  .ptab { padding: 7px 18px; border-radius: 50px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--gray-200); color: var(--gray-500); background: var(--bg-surface); transition: all 0.15s; }
   .ptab:hover { border-color: var(--red); color: var(--red); }
   .ptab.active { background: var(--red); color: white; border-color: var(--red); }
   .ptab.tiktok.active { background: var(--black); border-color: var(--black); }
   .ptab.ventas.active { background: var(--green); border-color: var(--green); }
 
   .perf-kpi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
-  .perf-kpi { border-radius: 12px; padding: 18px; border: 1px solid var(--gray-200); background: white; }
+  .perf-kpi { border-radius: 12px; padding: 18px; border: 1px solid var(--gray-200); background: var(--bg-surface); }
   .perf-kpi-icon { font-size: 20px; margin-bottom: 10px; }
   .perf-kpi-label { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 5px; }
   .perf-kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 30px; line-height: 1; color: var(--black); }
@@ -141,7 +200,7 @@
   .delta-down { background: #FEE2E2; color: #991B1B; }
   .delta-flat { background: var(--gray-100); color: var(--gray-500); }
 
-  .chart-wrap { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .chart-wrap { background: var(--bg-surface); border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
   .chart-title { font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
   .chart-container { position: relative; height: 180px; }
 
@@ -173,7 +232,7 @@
     margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
   }
   .period-bar-label { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); }
-  .period-pills { display: flex; gap: 4px; background: white; border: 1px solid var(--gray-200); border-radius: 8px; padding: 3px; }
+  .period-pills { display: flex; gap: 4px; background: var(--bg-surface); border: 1px solid var(--gray-200); border-radius: 8px; padding: 3px; }
   .ppill {
     padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
     color: var(--gray-500); cursor: pointer; transition: all 0.15s; border: none;
@@ -185,10 +244,10 @@
   .period-comparison {
     display: flex; align-items: center; gap: 6px;
     font-size: 12px; color: var(--gray-500);
-    background: white; border: 1px solid var(--gray-200);
+    background: var(--bg-surface); border: 1px solid var(--gray-200);
     border-radius: 8px; padding: 6px 12px;
   }
-  .period-comparison span { font-weight: 500; color: var(--black); }
+  .period-comparison span { font-weight: 500; color: var(--text-primary); }
 
   /* ── TABLET (≤900px) ── */
   @media (max-width: 900px) {
@@ -279,6 +338,7 @@
 
 <!-- LOGIN -->
 <div id="login-page">
+  <button class="theme-toggle" id="theme-toggle-btn-login" onclick="toggleTheme()" title="Cambiar tema" style="position:fixed;top:20px;right:20px;z-index:50;background:var(--bg-surface);border-color:var(--border-color);color:var(--text-secondary)">🌙</button>
   <div class="login-left">
     <div class="login-logo">CO/LAB</div>
     <div class="login-tagline">Portal de Talentos · 2026</div>
@@ -361,7 +421,7 @@
           <span id="admin-arrow" style="color:rgba(255,255,255,0.4);font-size:11px;transition:transform 0.2s;display:none">▼</span>
         </div>
         <!-- Admin dropdown -->
-        <div id="admin-menu" style="display:none;position:absolute;top:calc(100% + 12px);right:0;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);min-width:220px;z-index:500;overflow:hidden">
+        <div id="admin-menu" style="display:none;position:absolute;top:calc(100% + 12px);right:0;background:var(--bg-surface);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);min-width:220px;z-index:500;overflow:hidden">
           <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500)">Ver como talento</div>
           <div id="admin-talent-list"></div>
           <div style="border-top:1px solid var(--gray-100)">
@@ -371,6 +431,7 @@
           </div>
         </div>
       </div>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
       <button class="btn-logout" id="btn-logout-simple" onclick="logout()">Cerrar sesión</button>
     </div>
   </div>
@@ -378,7 +439,7 @@
   <div class="dash-inner">
     <div class="dash-header">
       <h1>Hola, <span id="dash-name">--</span></h1>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div id="year-selector-wrap" style="display:flex;align-items:center;gap:10px">
         <div class="period" id="dash-period">Campañas</div>
         <div style="display:flex;align-items:center;gap:6px;background:white;border:1px solid var(--gray-200);border-radius:8px;padding:4px 10px">
           <button onclick="changeYear(-1)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gray-500);padding:0 4px;line-height:1;font-family:'DM Sans',sans-serif" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--gray-500)'">←</button>
@@ -702,6 +763,37 @@ function chgHtml(curr, prev) {
   return `<span class="${cls}">${sign}${Math.abs(p).toFixed(1)}%</span>`;
 }
 
+/* ════════════════════════════════════════
+   THEME (claro / oscuro)
+════════════════════════════════════════ */
+function applyTheme(theme) {
+  if (theme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+  const icon = theme === "dark" ? "☀️" : "🌙";
+  const btn1 = document.getElementById("theme-toggle-btn");
+  if (btn1) btn1.textContent = icon;
+  const btn2 = document.getElementById("theme-toggle-btn-login");
+  if (btn2) btn2.textContent = icon;
+  localStorage.setItem("colab_theme", theme);
+}
+
+function toggleTheme() {
+  const current = localStorage.getItem("colab_theme") || "light";
+  applyTheme(current === "dark" ? "light" : "dark");
+}
+
+(function initTheme() {
+  const saved = localStorage.getItem("colab_theme") || (document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
+  const icon = saved === "dark" ? "☀️" : "🌙";
+  const btn1 = document.getElementById("theme-toggle-btn");
+  if (btn1) btn1.textContent = icon;
+  const btn2 = document.getElementById("theme-toggle-btn-login");
+  if (btn2) btn2.textContent = icon;
+})();
+
 let currentUser = null;
 let currentYear = new Date().getFullYear();
 let currentPlatform = "ig";
@@ -940,6 +1032,8 @@ function adminGoHome() {
   document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "none");
   document.getElementById("sec-admin").classList.add("active");
   document.getElementById("nav-admin").classList.add("active");
+  const yearWrap1 = document.getElementById("year-selector-wrap");
+  if (yearWrap1) yearWrap1.style.display = "none";
   renderAdminDashboard();
   window.scrollTo(0, 0);
 }
@@ -1001,6 +1095,8 @@ async function doLogin() {
     document.getElementById("footer-date").textContent =
       "Actualizado: " + new Date().toLocaleDateString("es-MX", {day:"numeric",month:"long",year:"numeric"});
     document.getElementById("year-display").textContent = new Date().getFullYear();
+    const themeBtnAdmin = document.getElementById("theme-toggle-btn");
+    if (themeBtnAdmin) themeBtnAdmin.textContent = (document.documentElement.getAttribute("data-theme") === "dark") ? "☀️" : "🌙";
     // Hide talent tabs, show only admin tab
     document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "none");
     document.getElementById("login-page").style.display = "none";
@@ -1010,6 +1106,8 @@ async function doLogin() {
     document.querySelectorAll(".snav-item").forEach(s => s.classList.remove("active"));
     document.getElementById("sec-admin").classList.add("active");
     document.getElementById("nav-admin").classList.add("active");
+    const yearWrap2 = document.getElementById("year-selector-wrap");
+    if (yearWrap2) yearWrap2.style.display = "none";
     renderAdminDashboard();
     window.scrollTo(0, 0);
     return;
@@ -1097,6 +1195,8 @@ function switchSection(id, el) {
   document.querySelectorAll(".snav-item").forEach(s => s.classList.remove("active"));
   document.getElementById("sec-" + id).classList.add("active");
   el.classList.add("active");
+  const yearWrap = document.getElementById("year-selector-wrap");
+  if (yearWrap) yearWrap.style.display = (id === "campanas") ? "flex" : "none";
   if (id === "performance") renderPerformance(currentUser, currentPlatform);
   if (id === "admin") renderAdminDashboard();
 }
@@ -1133,6 +1233,8 @@ function renderAll(user) {
   document.getElementById("dash-name").textContent = user.apodo;
   document.getElementById("footer-date").textContent =
     "Actualizado: " + new Date().toLocaleDateString("es-MX", {day:"numeric",month:"long",year:"numeric"});
+  const themeBtn = document.getElementById("theme-toggle-btn");
+  if (themeBtn) themeBtn.textContent = (document.documentElement.getAttribute("data-theme") === "dark") ? "☀️" : "🌙";
 
   currentYear = new Date().getFullYear();
   document.getElementById("year-display").textContent = currentYear;
