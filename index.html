@@ -304,10 +304,6 @@
       </div>
       <button class="btn-enter" onclick="doLogin()">ENTRAR</button>
       <div class="login-err" id="login-err"></div>
-      <div class="demo-hint">
-        <p>Demo — selecciona un talento</p>
-        <div class="demo-chips" id="demo-chips"></div>
-      </div>
     </div>
 
     <!-- REGISTER FORM -->
@@ -711,27 +707,8 @@ let chartInstances = {};
 /* ════════════════════════════════════════
    AUTH
 ════════════════════════════════════════ */
-function buildDemoChips() {
-  const chipWrap = document.getElementById("demo-chips");
-  chipWrap.innerHTML = "";
-  Object.entries(TALENTS).forEach(([key, t]) => {
-    if (!t.email) return;
-    const c = document.createElement("span");
-    c.className = "demo-chip"; c.textContent = t.apodo;
-    c.onclick = () => {
-      document.querySelectorAll(".demo-chip").forEach(x => x.classList.remove("active"));
-      c.classList.add("active");
-      document.getElementById("email-input").value = t.email;
-      document.getElementById("pass-input").value = t.pw;
-    };
-    chipWrap.appendChild(c);
-  });
-}
-
 // Init: load sheet data then show login
-loadSheetData().then(ok => {
-  if (ok) buildDemoChips();
-});
+loadSheetData();
 
 
 /* ════════════════════════════════════════
@@ -996,7 +973,6 @@ function logout() {
   isAdmin = false;
   document.getElementById("login-page").style.display = "flex";
   document.getElementById("dash-page").style.display = "none";
-  document.querySelectorAll(".demo-chip").forEach(x => x.classList.remove("active"));
   document.getElementById("email-input").value = "";
   Object.values(chartInstances).forEach(c => c.destroy());
   chartInstances = {};
@@ -1531,6 +1507,89 @@ function renderKpis(user, camps) {
   const marcas   = [...new Set(camps.map(c=>c.marca))];
 
   document.getElementById("kpi-section-content").innerHTML = `
+    <!-- KPIs Redes Sociales -->
+    ${(() => {
+      const perf = PERFORMANCE[user.clave] || {};
+      const igData = perf.ig || [];
+      const ttData = perf.tt || [];
+      const igLatest = igData[igData.length - 1];
+      const ttLatest = ttData[ttData.length - 1];
+
+      // Year-over-year logic:
+      // If latest is in 2026 → compare vs Dic 2025
+      // If latest is in 2025 → compare Dic 2025 vs Dic 2024
+      function findYoY(data, latest) {
+        if (!latest) return null;
+        const yr = parseInt(latest.fecha.split(" ")[1]);
+        if (yr >= 2026) {
+          return data.find(d => d.fecha === "Dic 2025") || null;
+        } else if (yr === 2025) {
+          // Use Dec of this year vs Dec of prev year — find Dec 2025 as current and Dec 2024 as ref
+          return data.find(d => d.fecha === "Dic 2024") || null;
+        }
+        return null;
+      }
+
+      // For 2025: override latest to be Dec 2025 if we're comparing year-end
+      function getCompareLatest(data, latest) {
+        if (!latest) return latest;
+        const yr = parseInt(latest.fecha.split(" ")[1]);
+        if (yr === 2025) {
+          return data.find(d => d.fecha === "Dic 2025") || latest;
+        }
+        return latest;
+      }
+
+      const igCompLatest = getCompareLatest(igData, igLatest);
+      const ttCompLatest = getCompareLatest(ttData, ttLatest);
+      const igYoY = findYoY(igData, igLatest);
+      const ttYoY = findYoY(ttData, ttLatest);
+
+      const kpiBox = (icon, label, val, d, color) => `
+        <div style="background:var(--gray-100);border-radius:10px;padding:14px">
+          <div style="font-size:18px;margin-bottom:6px">${icon}</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray-500);margin-bottom:4px">${label}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${color};line-height:1">${val}</div>
+          ${d && d.pct > 0 ? `<span class="perf-kpi-delta ${d.cls}" style="margin-top:4px">${d.sign} ${d.pct}% vs año ant.</span>` : d ? `<span class="perf-kpi-delta ${d.cls}" style="margin-top:4px">${d.sign} ${d.pct}% vs año ant.</span>` : ""}
+        </div>`;
+
+      let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+
+      if (igLatest) {
+        const dSeg = delta(igCompLatest.seguidores, igYoY?.seguidores);
+        const dEng = delta(igCompLatest.engagement, igYoY?.engagement);
+        const dAlc = delta(igCompLatest.alcance,    igYoY?.alcance);
+        const yoyLabel = igYoY ? `${igCompLatest.fecha} vs ${igYoY.fecha}` : igLatest.fecha;
+        html += `<div class="panel" style="margin-bottom:0">
+          <div class="panel-title">📸 Instagram <span style="font-size:10px;color:var(--gray-500);letter-spacing:0;text-transform:none;font-weight:400">@${user.instagram || "—"} · ${igLatest.fecha}${igYoY ? ` · vs ${igYoY.fecha}` : ""}</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            ${kpiBox("👥","Seguidores",fmtNum(igLatest.seguidores),dSeg,"var(--black)")}
+            ${kpiBox("💬","Engagement",igLatest.engagement.toFixed(1)+"%",dEng,"var(--purple)")}
+            ${kpiBox("📢","Alcance",fmtNum(igLatest.alcance),dAlc,"var(--blue)")}
+          </div>
+        </div>`;
+      }
+
+      if (ttLatest) {
+        const dSeg = delta(ttCompLatest.seguidores, ttYoY?.seguidores);
+        const dEng = delta(ttCompLatest.engagement, ttYoY?.engagement);
+        const dRep = delta(ttCompLatest.repros,     ttYoY?.repros);
+        const yoyLabelTT = ttYoY ? `${ttCompLatest.fecha} vs ${ttYoY.fecha}` : ttLatest.fecha;
+        html += `<div class="panel" style="margin-bottom:0">
+          <div class="panel-title">🎵 TikTok <span style="font-size:10px;color:var(--gray-500);letter-spacing:0;text-transform:none;font-weight:400">@${user.tiktok || "—"} · ${ttLatest.fecha}${ttYoY ? ` · vs ${ttYoY.fecha}` : ""}</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            ${kpiBox("👥","Seguidores",fmtNum(ttLatest.seguidores),dSeg,"var(--black)")}
+            ${kpiBox("▶️","Repros",fmtNum(ttLatest.repros),dRep,"var(--red)")}
+            ${kpiBox("💬","Engagement",ttLatest.engagement.toFixed(1)+"%",dEng,"var(--purple)")}
+          </div>
+        </div>`;
+      }
+
+      html += '</div>';
+      return (!igLatest && !ttLatest) ? "" : html;
+    })()}
+
+
     <!-- 4 KPIs principales -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="kpi-card accent"><div class="kpi-label">Subtotal campaña</div><div class="kpi-val">${fmtK(sub)}</div><div class="kpi-sub">${camps.length} campaña${camps.length!==1?"s":""} · 2026</div></div>
