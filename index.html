@@ -483,7 +483,7 @@ window.addEventListener("resize", () => {
 const SHEET_ID = "17NdtOJX1CRdtuDr592ekTQbyBT_bfivTEOhgdSUgOxU";
 const API_KEY  = "AIzaSyCLshttTdmHcknVI2Zh0tKzRnVXJuZpMvk";
 const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
-const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbx4BkkQCblXqRoz8nXaTYW2EWYrGnstoexgmgmVSimriAVNQYkCCTbTG93KoB9fFvjgiw/exec";
+const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbwWNxTz1RIB3YlqwuFbFQzcUmQE0J4kRJ9y2MgMvSoJSr3GwLr14aHAlzw3oUPZ_y7Uyw/exec";
 
 // Runtime data — populated from Sheets on load
 let TALENTS   = {};
@@ -757,19 +757,42 @@ function togglePass(inputId, btn) {
   else { input.type = "password"; btn.textContent = "👁"; }
 }
 
-// Passwords stored persistently in the "Usuarios" sheet via Apps Script Web App
-async function authApiCall(payload) {
-  try {
-    const res = await fetch(AUTH_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight
-      body: JSON.stringify(payload)
+// Passwords stored persistently in the "Usuarios" sheet via Apps Script Web App.
+// Apps Script Web Apps don't send CORS headers reliably for fetch(), so we use
+// JSONP (script tag injection) which is immune to CORS restrictions.
+let _jsonpCounter = 0;
+function authApiCall(payload) {
+  return new Promise((resolve) => {
+    const cbName = "_authCb" + (_jsonpCounter++);
+    const timeout = setTimeout(() => {
+      cleanup();
+      resolve({ ok: false, error: "timeout" });
+    }, 12000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    const params = new URLSearchParams({
+      callback: cbName,
+      payload: JSON.stringify(payload)
     });
-    return await res.json();
-  } catch (err) {
-    console.error("Auth API error:", err);
-    return { ok: false, error: "network" };
-  }
+
+    const script = document.createElement("script");
+    script.src = `${AUTH_API_URL}?${params.toString()}`;
+    script.onerror = () => {
+      cleanup();
+      resolve({ ok: false, error: "network" });
+    };
+    document.body.appendChild(script);
+  });
 }
 
 async function checkLoginRemote(email, password) {
