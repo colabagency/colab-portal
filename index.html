@@ -355,11 +355,24 @@
   <div class="topbar">
     <div class="topbar-logo">CO/LAB</div>
     <div class="topbar-right">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="talento-av" id="top-av">--</div>
-        <span class="talento-name" id="top-name">--</span>
+      <div style="position:relative">
+        <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleAdminMenu()" id="top-user-btn">
+          <div class="talento-av" id="top-av">--</div>
+          <span class="talento-name" id="top-name">--</span>
+          <span id="admin-arrow" style="color:rgba(255,255,255,0.4);font-size:11px;transition:transform 0.2s;display:none">▼</span>
+        </div>
+        <!-- Admin dropdown -->
+        <div id="admin-menu" style="display:none;position:absolute;top:calc(100% + 12px);right:0;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);min-width:220px;z-index:500;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500)">Ver como talento</div>
+          <div id="admin-talent-list"></div>
+          <div style="border-top:1px solid var(--gray-100)">
+            <button onclick="logout()" style="width:100%;padding:12px 16px;background:none;border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--red);cursor:pointer;display:flex;align-items:center;gap:8px" onmouseenter="this.style.background='#FEF2F2'" onmouseleave="this.style.background='none'">
+              <span>←</span> Cerrar sesión
+            </button>
+          </div>
+        </div>
       </div>
-      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+      <button class="btn-logout" id="btn-logout-simple" onclick="logout()">Cerrar sesión</button>
     </div>
   </div>
 
@@ -380,6 +393,7 @@
       <div class="snav-item active" onclick="switchSection('campanas',this)">Mis campañas</div>
       <div class="snav-item" onclick="switchSection('kpis',this)">Mis KPIs</div>
       <div class="snav-item" onclick="switchSection('performance',this)">Performance</div>
+      <div class="snav-item" id="nav-admin" style="display:none;color:var(--red)" onclick="switchSection('admin',this)">⚡ Admin</div>
     </nav>
 
     <!-- ── CAMPAÑAS ── -->
@@ -406,6 +420,9 @@
         </div>
       </div>
     </div>
+
+    <!-- ── ADMIN ── -->
+    <div class="dash-section" id="sec-admin"></div>
 
     <!-- ── KPIs ── -->
     <div class="dash-section" id="sec-kpis">
@@ -810,6 +827,109 @@ function doForgot() {
   okEl.style.display = "block";
 }
 
+
+/* ════════════════════════════════════════
+   ADMIN MODE
+════════════════════════════════════════ */
+let isAdmin = false;
+
+function toggleAdminMenu() {
+  if (!isAdmin) return;
+  const menu = document.getElementById("admin-menu");
+  const arrow = document.getElementById("admin-arrow");
+  const open = menu.style.display === "none";
+  menu.style.display = open ? "block" : "none";
+  arrow.style.transform = open ? "rotate(180deg)" : "rotate(0deg)";
+  if (open) {
+    // Build talent list
+    const list = document.getElementById("admin-talent-list");
+    const isOnAdmin = document.getElementById("sec-admin").classList.contains("active");
+    // Admin dashboard option at top
+    const adminOption = `<button onclick="adminGoHome()"
+      style="width:100%;padding:10px 16px;background:${isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-100)"
+      onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${isOnAdmin?"var(--off-white)":"none'"}">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">⚡</div>
+      <div>
+        <div style="font-weight:600">Admin Dashboard</div>
+        <div style="font-size:10px;color:var(--gray-500)">Vista general CO/LAB</div>
+      </div>
+      ${isOnAdmin?'<span style="margin-left:auto;color:var(--green);font-size:12px">✓</span>':""}
+    </button>`;
+    list.innerHTML = adminOption + Object.values(TALENTS).filter(t => t.clave !== "ADMIN").map(t => `
+      <button onclick="adminSwitchTo('${t.email}')"
+        style="width:100%;padding:10px 16px;background:${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);cursor:pointer;display:flex;align-items:center;gap:10px"
+        onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none'"}">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:12px;color:white;flex-shrink:0">${initials(t.nombre)}</div>
+        <div>
+          <div style="font-weight:500">${t.apodo}</div>
+          <div style="font-size:10px;color:var(--gray-500)">${t.clave}</div>
+        </div>
+        ${currentUser && currentUser.email===t.email && !isOnAdmin?'<span style="margin-left:auto;color:var(--green);font-size:12px">✓</span>':""}
+      </button>`).join("");
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener("click", closeAdminMenuOutside, { once: true });
+    }, 50);
+  }
+}
+
+function closeAdminMenuOutside(e) {
+  const menu = document.getElementById("admin-menu");
+  const btn  = document.getElementById("top-user-btn");
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.style.display = "none";
+    const arrow = document.getElementById("admin-arrow");
+    if (arrow) arrow.style.transform = "rotate(0deg)";
+  }
+}
+
+function adminGoHome() {
+  document.getElementById("admin-menu").style.display = "none";
+  const arrow = document.getElementById("admin-arrow");
+  if (arrow) arrow.style.transform = "rotate(0deg)";
+  // Remove banner if viewing a talent
+  const banner = document.getElementById("admin-banner");
+  if (banner) banner.remove();
+  // Update topbar
+  document.getElementById("top-av").textContent = "RS";
+  document.getElementById("top-name").textContent = "Ricardo";
+  document.getElementById("dash-name").textContent = "Ricardo";
+  // Switch to admin section
+  document.querySelectorAll(".dash-section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".snav-item").forEach(s => s.classList.remove("active"));
+  // Hide talent tabs again
+  document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "none");
+  document.getElementById("sec-admin").classList.add("active");
+  document.getElementById("nav-admin").classList.add("active");
+  renderAdminDashboard();
+  window.scrollTo(0, 0);
+}
+
+function adminSwitchTo(email) {
+  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email.toLowerCase());
+  if (!user) return;
+  document.getElementById("admin-menu").style.display = "none";
+  const arrow = document.getElementById("admin-arrow");
+  if (arrow) arrow.style.transform = "rotate(0deg)";
+  // Show admin banner
+  let banner = document.getElementById("admin-banner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "admin-banner";
+    banner.style.cssText = "background:var(--black);color:white;text-align:center;font-size:11px;padding:7px;letter-spacing:1px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px";
+    const topbar = document.querySelector(".topbar");
+    if (topbar && topbar.nextSibling) topbar.parentNode.insertBefore(banner, topbar.nextSibling);
+  }
+  banner.innerHTML = `<span>👁 MODO ADMIN</span><span style="opacity:0.4">|</span><span>Viendo: <strong>${user.nombre}</strong> · ${user.clave}</span><button onclick="adminGoHome()" style="background:var(--red);border:none;color:white;font-size:10px;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:8px">← Admin</button>`;
+  currentUser = user;
+  currentPlatform = "ig";
+  // Restore talent tabs
+  document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "block");
+  renderAll(user);
+  switchSection("campanas", document.querySelectorAll(".snav-item")[0]);
+  window.scrollTo(0, 0);
+}
+
 function doLogin() {
   const email = document.getElementById("email-input").value.trim().toLowerCase();
   const pw = document.getElementById("pass-input").value;
@@ -822,11 +942,35 @@ function doLogin() {
   const admin = ADMINS.find(a => a.email.toLowerCase() === email && a.pw === pw);
   if (admin) {
     err.textContent = "";
-    currentUser = admin;
+    isAdmin = true;
+    // Admin entra viendo el primer talento disponible
+    const firstTalent = Object.values(TALENTS).filter(t => t.clave !== "ADMIN")[0] || admin;
+    currentUser = firstTalent;
     currentPlatform = "ig";
-    renderAll(admin);
+    // Show admin arrow and nav tab
+    const arrow = document.getElementById("admin-arrow");
+    if (arrow) arrow.style.display = "inline";
+    const logoutBtn = document.getElementById("btn-logout-simple");
+    if (logoutBtn) logoutBtn.style.display = "none";
+    const navAdmin = document.getElementById("nav-admin");
+    if (navAdmin) navAdmin.style.display = "block";
+    // Admin goes directly to admin dashboard
+    document.getElementById("top-av").textContent = "RS";
+    document.getElementById("top-name").textContent = "Ricardo";
+    document.getElementById("dash-name").textContent = "Ricardo";
+    document.getElementById("footer-date").textContent =
+      "Actualizado: " + new Date().toLocaleDateString("es-MX", {day:"numeric",month:"long",year:"numeric"});
+    document.getElementById("year-display").textContent = new Date().getFullYear();
+    // Hide talent tabs, show only admin tab
+    document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "none");
     document.getElementById("login-page").style.display = "none";
     document.getElementById("dash-page").style.display = "block";
+    // Activate admin tab
+    document.querySelectorAll(".dash-section").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".snav-item").forEach(s => s.classList.remove("active"));
+    document.getElementById("sec-admin").classList.add("active");
+    document.getElementById("nav-admin").classList.add("active");
+    renderAdminDashboard();
     window.scrollTo(0, 0);
     return;
   }
@@ -849,12 +993,25 @@ function doLogin() {
 }
 
 function logout() {
+  isAdmin = false;
   document.getElementById("login-page").style.display = "flex";
   document.getElementById("dash-page").style.display = "none";
   document.querySelectorAll(".demo-chip").forEach(x => x.classList.remove("active"));
   document.getElementById("email-input").value = "";
   Object.values(chartInstances).forEach(c => c.destroy());
   chartInstances = {};
+  const banner = document.getElementById("admin-banner");
+  if (banner) banner.remove();
+  const navAdminEl = document.getElementById("nav-admin");
+  if (navAdminEl) navAdminEl.style.display = "none";
+  // Restore talent tabs for next login
+  document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "block");
+  const arrow = document.getElementById("admin-arrow");
+  if (arrow) { arrow.style.display = "none"; arrow.style.transform = "rotate(0deg)"; }
+  const logoutBtn = document.getElementById("btn-logout-simple");
+  if (logoutBtn) logoutBtn.style.display = "inline-block";
+  const menu = document.getElementById("admin-menu");
+  if (menu) menu.style.display = "none";
 }
 
 document.addEventListener("keydown", e => {
@@ -884,6 +1041,7 @@ function switchSection(id, el) {
   document.getElementById("sec-" + id).classList.add("active");
   el.classList.add("active");
   if (id === "performance") renderPerformance(currentUser, currentPlatform);
+  if (id === "admin") renderAdminDashboard();
 }
 
 function switchPlatform(plat, el) {
@@ -1031,6 +1189,222 @@ function renderCampanas(user, camps) {
    KPIs
 ════════════════════════════════════════ */
 
+
+/* ════════════════════════════════════════
+   ADMIN DASHBOARD
+════════════════════════════════════════ */
+function renderAdminDashboard() {
+  const el = document.getElementById("sec-admin");
+  const allCamps = CAMPAIGNS;
+  const talents  = Object.values(TALENTS).filter(t => t.clave !== "ADMIN");
+
+  // Global KPIs
+  const totalSub    = allCamps.reduce((a,c)=>a+c.subtotal,    0);
+  const totalFee    = allCamps.reduce((a,c)=>a+c.fee,         0);
+  const totalSubT   = allCamps.reduce((a,c)=>a+c.sub_t,       0);
+  const totalTotalT = allCamps.reduce((a,c)=>a+c.total_t,     0);
+  const totalCobT   = allCamps.reduce((a,c)=>a+c.cobrado_t,   0);
+  const totalPorCob = allCamps.reduce((a,c)=>a+c.por_cobrar_t,0);
+  const enProceso   = allCamps.filter(c=>norm(c.status)==="en proceso").length;
+  const finalizadas = allCamps.filter(c=>norm(c.status)==="finalizado").length;
+  const pendientes  = allCamps.filter(c=>norm(c.status)==="pendiente").length;
+  const marcas      = [...new Set(allCamps.map(c=>c.marca))];
+  const agencias    = [...new Set(allCamps.map(c=>c.agencia))];
+
+  // Per-talent summary
+  const talentSummary = talents.map(t => {
+    const tc = allCamps.filter(c=>c.talento_clave===t.clave);
+    return {
+      ...t,
+      camps:   tc.length,
+      sub:     tc.reduce((a,c)=>a+c.subtotal,    0),
+      fee:     tc.reduce((a,c)=>a+c.fee,         0),
+      sub_t:   tc.reduce((a,c)=>a+c.sub_t,       0),
+      total_t: tc.reduce((a,c)=>a+c.total_t,     0),
+      porCob:  tc.reduce((a,c)=>a+c.por_cobrar_t,0),
+    };
+  }).sort((a,b) => b.sub - a.sub);
+
+  el.innerHTML = `
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px">Dashboard CO/LAB</h2>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:2px">Vista general de la agencia · ${new Date().toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"})}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:8px;padding:6px 14px;font-size:12px;color:var(--green);font-weight:500">${talents.length} talentos activos</div>
+        <div style="background:var(--blue-light);border:1px solid #BFDBFE;border-radius:8px;padding:6px 14px;font-size:12px;color:var(--blue);font-weight:500">${allCamps.length} campañas</div>
+      </div>
+    </div>
+
+    <!-- KPI strip principal -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Subtotal total campañas</div>
+        <div class="kpi-val">${fmtK(totalSub)}</div>
+        <div class="kpi-sub">${allCamps.length} campañas · 2026</div>
+      </div>
+      <div class="kpi-card" style="border-left:3px solid var(--red)">
+        <div class="kpi-label">Total fees agencia</div>
+        <div class="kpi-val" style="color:var(--red)">${fmtK(totalFee)}</div>
+        <div class="kpi-sub">Ingresos CO/LAB</div>
+      </div>
+      <div class="kpi-card" style="border-left:3px solid var(--green)">
+        <div class="kpi-label">Total talento neto</div>
+        <div class="kpi-val" style="color:var(--green)">${fmtK(totalTotalT)}</div>
+        <div class="kpi-sub">Después de retenciones</div>
+      </div>
+      <div class="kpi-card" style="border-left:3px solid var(--amber)">
+        <div class="kpi-label">Por cobrar total</div>
+        <div class="kpi-val" style="color:var(--amber)">${fmtK(totalPorCob)}</div>
+        <div class="kpi-sub">${totalCobT>0?fmtK(totalCobT)+" cobrado":"Sin cobros aún"}</div>
+      </div>
+    </div>
+
+    <!-- Status + Marcas + Agencias -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Status campañas</div>
+        ${[
+          {l:"En proceso", v:enProceso,  color:"var(--blue)",  bg:"var(--blue-light)"},
+          {l:"Pendientes", v:pendientes, color:"var(--amber)", bg:"var(--amber-light)"},
+          {l:"Finalizadas",v:finalizadas,color:"var(--green)", bg:"var(--green-light)"},
+        ].map(s=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:50%;background:${s.color}"></div>
+              <span style="font-size:13px">${s.l}</span>
+            </div>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${s.color}">${s.v}</span>
+          </div>`).join("")}
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Marcas (${marcas.length})</div>
+        ${marcas.map(m=>{
+          const mc = allCamps.filter(c=>c.marca===m);
+          const ms = mc.reduce((a,c)=>a+c.subtotal,0);
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100)">
+            <div style="font-size:13px;font-weight:500">${m}</div>
+            <div style="text-align:right">
+              <div style="font-size:12px;font-weight:600">${fmtK(ms)}</div>
+              <div style="font-size:10px;color:var(--gray-500)">${mc.length} campaña${mc.length!==1?"s":""}</div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Agencias (${agencias.length})</div>
+        ${agencias.map(a=>{
+          const ac = allCamps.filter(c=>c.agencia===a);
+          const as2 = ac.reduce((a2,c)=>a2+c.subtotal,0);
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100)">
+            <div style="font-size:13px;font-weight:500">${a}</div>
+            <div style="text-align:right">
+              <div style="font-size:12px;font-weight:600">${fmtK(as2)}</div>
+              <div style="font-size:10px;color:var(--gray-500)">${ac.length} campaña${ac.length!==1?"s":""}</div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <!-- Resumen por talento -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="panel-title">Resumen por talento</div>
+      <div style="overflow-x:auto">
+      <table class="campaign-table">
+        <thead><tr>
+          <th>Talento</th>
+          <th style="text-align:center">Campañas</th>
+          <th style="text-align:right">Subtotal campaña</th>
+          <th style="text-align:right">Fee CO/LAB</th>
+          <th style="text-align:right">Subtotal talento</th>
+          <th style="text-align:right">Total talento</th>
+          <th style="text-align:right">Por cobrar</th>
+        </tr></thead>
+        <tbody>
+          ${talentSummary.map(t=>`<tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;color:white;flex-shrink:0">${initials(t.nombre)}</div>
+                <div>
+                  <div style="font-weight:500;font-size:13px">${t.apodo}</div>
+                  <div style="font-size:10px;color:var(--gray-500)">${t.clave} · Fee ${t.fee_pct}%</div>
+                </div>
+              </div>
+            </td>
+            <td style="text-align:center">
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:20px">${t.camps}</span>
+            </td>
+            <td style="text-align:right;font-weight:500">${t.sub>0?fmt(t.sub):"—"}</td>
+            <td style="text-align:right;color:var(--red)">${t.fee>0?"− "+fmt(t.fee):"—"}</td>
+            <td style="text-align:right;color:var(--green);font-weight:500">${t.sub_t>0?fmt(t.sub_t):"—"}</td>
+            <td style="text-align:right;font-weight:600">${t.total_t>0?fmt(t.total_t):"—"}</td>
+            <td style="text-align:right;color:${t.porCob>0?"var(--amber)":"var(--gray-500)"};font-weight:${t.porCob>0?600:400}">${t.porCob>0?fmt(t.porCob):"✓"}</td>
+          </tr>`).join("")}
+        </tbody>
+        <tfoot>
+          <tr style="border-top:2px solid var(--black);background:#FAFAF8">
+            <td style="font-family:'Bebas Neue',sans-serif;font-size:14px;padding-top:12px;letter-spacing:1px">TOTAL</td>
+            <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:20px;padding-top:12px">${allCamps.length}</td>
+            <td style="text-align:right;font-weight:700;padding-top:12px">${fmt(totalSub)}</td>
+            <td style="text-align:right;color:var(--red);font-weight:700;padding-top:12px">− ${fmt(totalFee)}</td>
+            <td style="text-align:right;color:var(--green);font-weight:700;padding-top:12px">${fmt(totalSubT)}</td>
+            <td style="text-align:right;font-weight:700;padding-top:12px">${fmt(totalTotalT)}</td>
+            <td style="text-align:right;color:var(--amber);font-weight:700;padding-top:12px">${fmt(totalPorCob)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      </div>
+    </div>
+
+    <!-- Todas las campañas -->
+    <div class="panel">
+      <div class="panel-title">Todas las campañas <span style="font-size:11px;color:var(--black);letter-spacing:0;text-transform:none;font-weight:500">${allCamps.length} total</span></div>
+      <div style="overflow-x:auto">
+      <table class="campaign-table">
+        <thead><tr>
+          <th>Campaña</th>
+          <th>Talento</th>
+          <th>Agencia · Marca</th>
+          <th>Vigencia</th>
+          <th style="text-align:right">Subtotal</th>
+          <th style="text-align:right">Fee</th>
+          <th style="text-align:right">Total talento</th>
+          <th style="text-align:right">Por cobrar</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>
+          ${allCamps.map(c=>{
+            const sc = norm(c.status);
+            const color = sc==="finalizado"?"var(--green)":sc==="en proceso"?"var(--blue)":"var(--amber)";
+            const bg    = sc==="finalizado"?"var(--green-light)":sc==="en proceso"?"var(--blue-light)":"var(--amber-light)";
+            const tal   = Object.values(TALENTS).find(t=>t.clave===c.talento_clave);
+            return `<tr>
+              <td><div class="camp-name">${c.campana}</div><div style="font-size:10px;color:var(--gray-500)">${c.id}</div></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:24px;height:24px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:10px;color:white;flex-shrink:0">${tal?initials(tal.nombre):"?"}</div>
+                  <span style="font-size:12px;font-weight:500">${tal?tal.apodo:c.talento_clave}</span>
+                </div>
+              </td>
+              <td style="font-size:12px;color:var(--gray-500)">${c.agencia}<br><span style="color:var(--black);font-weight:500">${c.marca}</span></td>
+              <td style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio}<br>→ ${c.fecha_fin}</td>
+              <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
+              <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
+              <td style="text-align:right;font-weight:600">${fmt(c.total_t)}</td>
+              <td style="text-align:right;color:${c.por_cobrar_t>0?"var(--amber)":"var(--green)"};font-weight:500">${c.por_cobrar_t>0?fmt(c.por_cobrar_t):"✓"}</td>
+              <td><span style="font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;background:${bg};color:${color}">${c.status}</span></td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `;
+}
+
 function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, totalT, cobradoT, porCobT) {
   const isMobile = window.innerWidth <= 640;
 
@@ -1168,9 +1542,9 @@ function renderKpis(user, camps) {
     <div style="display:grid;grid-template-columns:${rGrid(4)};gap:10px;margin-bottom:20px">
       ${[
         ["Campañas", camps.length, "activas 2026"],
-        ["IVA",      fmt(ivaAmt),  "16% calculado"],
-        ["IVA Ret.", fmt(ivaRet),  "retenido"],
-        ["ISR Ret.", fmt(isrRet),  "retenido"],
+        ["Marcas",   [...new Set(camps.map(c=>c.marca))].length,   [...new Set(camps.map(c=>c.marca))].join(", ")||"—"],
+        ["Agencias", [...new Set(camps.map(c=>c.agencia))].length, [...new Set(camps.map(c=>c.agencia))].join(", ")||"—"],
+        ["Total talento", fmtK(totalT), "después de retenciones"],
       ].map(([l,v,s])=>`<div class="panel" style="text-align:center;padding:16px;margin-bottom:0"><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500);margin-bottom:6px">${l}</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px">${v}</div><div style="font-size:11px;color:var(--gray-500);margin-top:4px">${s}</div></div>`).join("")}
     </div>
     <!-- Desglose por campaña -->
@@ -1510,7 +1884,7 @@ function renderVentasCampanas(user, period) {
     <!-- Chart + Desglose -->
     <div class="two-col" style="margin-bottom:16px">
       <div class="chart-wrap" style="margin-bottom:0">
-        <div class="chart-title">Subtotal talento vs Total talento por mes</div>
+        <div class="chart-title">Subtotal talento por mes</div>
         <div class="chart-container"><canvas id="chart-ventas-mes"></canvas></div>
       </div>
       <div class="panel" style="margin-bottom:0">
@@ -1624,18 +1998,48 @@ function renderVentasCampanas(user, period) {
     data: {
       labels: timeline.map(t => t.mes),
       datasets: [
-        { label: "Subtotal talento", data: timeline.map(t => t.sub_t),   backgroundColor: "rgba(26,140,91,0.15)", borderColor: "#1A8C5B", borderWidth: 1.5, borderRadius: 4 },
-        { label: "Total talento",    data: timeline.map(t => t.total_t), backgroundColor: "#1D6FB8", borderRadius: 4 },
+        { label: "Subtotal talento", data: timeline.map(t => t.sub_t), backgroundColor: "#1A8C5B", borderRadius: 4 },
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 24 } },
       plugins: {
-        legend: { display: true, position: "top", labels: { font: { size: 11, family: "DM Sans" }, color: tickColor, boxWidth: 12, padding: 14 } }
+        legend: { display: false },
+        tooltip: { callbacks: { 
+          label: ctx => " " + fmtK(ctx.raw),
+          afterLabel: ctx => {
+            const mes = timeline[ctx.dataIndex]?.mes;
+            const count = allCamps.filter(c => c.fecha_inicio.includes(mes?.split(" ")[0]) && c.fecha_inicio.includes(mes?.split(" ")[1])).length || 0;
+            const campsInMonth = allCamps.filter(c => {
+              const m = c.fecha_inicio.replace(/^\d+ /,"");
+              return m === mes;
+            });
+            return campsInMonth.length > 0 ? `${campsInMonth.length} campaña${campsInMonth.length!==1?"s":""}` : "";
+          }
+        } }
       },
       scales: {
-        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11, family: "DM Sans" } }, stacked: false },
+        x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11, family: "DM Sans" } } },
         y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11, family: "DM Sans" }, callback: v => fmtK(v) } }
+      },
+      animation: {
+        onComplete: function() {
+          const chart = this;
+          const ctx2 = chart.ctx;
+          ctx2.save();
+          ctx2.font = "bold 11px DM Sans";
+          ctx2.fillStyle = "#1A8C5B";
+          ctx2.textAlign = "center";
+          ctx2.textBaseline = "bottom";
+          chart.data.datasets.forEach((dataset, i) => {
+            chart.getDatasetMeta(i).data.forEach((bar, j) => {
+              const val = dataset.data[j];
+              if (val > 0) ctx2.fillText(fmtK(val), bar.x, bar.y - 4);
+            });
+          });
+          ctx2.restore();
+        }
       }
     }
   });
