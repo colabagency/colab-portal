@@ -376,7 +376,11 @@
           <button onclick="togglePass('pass-input',this)" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);padding:0;line-height:1">👁</button>
         </div>
       </div>
-      <div style="text-align:right;margin-top:-8px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:-4px;margin-bottom:16px">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--text-secondary);user-select:none">
+          <input type="checkbox" id="remember-me" style="width:15px;height:15px;accent-color:var(--red);cursor:pointer"/>
+          Recordar mis datos
+        </label>
         <button onclick="switchLoginTab('forgot')" style="background:none;border:none;font-size:12px;color:var(--gray-500);cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">¿Olvidaste tu contraseña?</button>
       </div>
       <button class="btn-enter" onclick="doLogin()">ENTRAR</button>
@@ -900,6 +904,7 @@ let chartInstances = {};
 ════════════════════════════════════════ */
 // Init: load sheet data then show login
 loadSheetData();
+applyRemember(); // pre-rellena correo/contraseña si el usuario marcó "Recordar mis datos"
 
 
 /* ════════════════════════════════════════
@@ -1001,6 +1006,34 @@ function cachePasswordLocally(email, pw) {
   const saved = getSavedPasswords();
   saved[email.toLowerCase()] = pw;
   localStorage.setItem("colab_passwords", JSON.stringify(saved));
+}
+
+/* ── Recordar mis datos (correo + contraseña) ── */
+function getRemember() {
+  try { return JSON.parse(localStorage.getItem("colab_remember") || "null"); } catch { return null; }
+}
+function setRemember(email, pw) {
+  try { localStorage.setItem("colab_remember", JSON.stringify({ email, pw })); } catch {}
+}
+function clearRemember() {
+  try { localStorage.removeItem("colab_remember"); } catch {}
+}
+function persistRemember(email, pw) {
+  const cb = document.getElementById("remember-me");
+  if (cb && cb.checked) setRemember(email, pw); else clearRemember();
+}
+function applyRemember() {
+  const r  = getRemember();
+  const cb = document.getElementById("remember-me");
+  const em = document.getElementById("email-input");
+  const pw = document.getElementById("pass-input");
+  if (r && em && pw) {
+    em.value = r.email || "";
+    pw.value = r.pw || "";
+    if (cb) cb.checked = true;
+  } else if (cb) {
+    cb.checked = false;
+  }
 }
 
 function doRegister() {
@@ -1203,6 +1236,7 @@ async function doLogin() {
     document.getElementById("nav-admin").classList.add("active");
     const yearWrap2 = document.getElementById("year-selector-wrap");
     if (yearWrap2) yearWrap2.style.display = "none";
+    persistRemember(email, pw);
     renderAdminDashboard();
     window.scrollTo(0, 0);
     return;
@@ -1235,6 +1269,7 @@ async function doLogin() {
 
   if (!valid) { err.textContent = "Correo o contraseña incorrectos"; return; }
 
+  persistRemember(email, pw);
   currentUser = user;
   currentPlatform = "ig";
   renderAll(user);
@@ -1248,6 +1283,8 @@ function logout() {
   document.getElementById("login-page").style.display = "flex";
   document.getElementById("dash-page").style.display = "none";
   document.getElementById("email-input").value = "";
+  const pwEl = document.getElementById("pass-input"); if (pwEl) pwEl.value = "";
+  applyRemember();
   Object.values(chartInstances).forEach(c => c.destroy());
   chartInstances = {};
   const banner = document.getElementById("admin-banner");
