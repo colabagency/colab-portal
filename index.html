@@ -654,7 +654,7 @@ async function loadSheetData() {
   showLoader("Conectando con Google Sheets...");
   try {
     // ── Cargar talentos (hoja: Lista de Talento_Colab Agency)
-    const talentRows = await fetchSheetCSV("Lista de Talento Activos");
+    const talentRows = await fetchSheetCSV("Lista de Talento_Colab Agency");
     if (talentRows.length > 0) talentRows.shift(); // remove header row
     TALENTS = {};
     for (const row of talentRows) {
@@ -684,7 +684,7 @@ async function loadSheetData() {
     }
 
     // ── Cargar campañas (hoja: Ventas 2026_Colab Agency)
-    const campRows = await fetchSheetCSV("Ventas 2026");
+    const campRows = await fetchSheetCSV("Ventas 2026_Colab Agency");
     if (campRows.length > 0) campRows.shift(); // remove header row
     CAMPAIGNS = [];
     for (const row of campRows) {
