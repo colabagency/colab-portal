@@ -574,7 +574,11 @@ let PERFORMANCE = {};
    SHEET LOADER
 ════════════════════════════════════════ */
 async function fetchSheetCSV(sheetName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`;
+  // El nombre de hoja va entre comillas simples para que la API pueda parsear
+  // el rango cuando contiene espacios o caracteres especiales. Una comilla
+  // simple dentro del nombre se escapa duplicándola (notación A1 de Sheets).
+  const range = `'${String(sheetName).replace(/'/g, "''")}'`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?key=${API_KEY}`;
   const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(()=>({}));
