@@ -102,12 +102,12 @@
   }
   .login-left::before {
     content: 'CO/LAB'; position: absolute;
-    font-family: 'Bebas Neue', sans-serif; font-size: 280px;
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(90px, 16vw, 280px);
     color: rgba(232,56,13,0.06); top: 50%; left: 50%;
     transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none;
   }
-  .login-logo { font-family: 'Bebas Neue', sans-serif; font-size: 64px; color: var(--red); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
-  .login-tagline { font-size: 13px; color: var(--gray-500); letter-spacing: 3px; text-transform: uppercase; font-weight: 300; }
+  .login-logo { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 6vw, 64px); color: var(--red); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
+  .login-tagline { font-size: clamp(10px, 1.6vw, 13px); color: var(--gray-500); letter-spacing: 3px; text-transform: uppercase; font-weight: 300; white-space: nowrap; }
   .login-right { width: 420px; background: var(--off-white); display: flex; flex-direction: column; justify-content: center; padding: 60px 50px; }
   .login-right h2 { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 1px; margin-bottom: 6px; }
   .login-right p { font-size: 13px; color: var(--gray-500); margin-bottom: 36px; }
@@ -311,7 +311,8 @@
 
     /* Period bar */
     .period-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .period-pills { flex-wrap: wrap; }
+    .period-pills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; background: var(--bg-surface); }
+    .period-pills .ppill { text-align: center; }
 
     /* Performance tabs */
     .perf-platform-tabs { flex-wrap: wrap; gap: 6px; }
@@ -1863,11 +1864,11 @@ function renderKpis(user, camps) {
           const statusLabel = norm(c.status)==="finalizado" ? "Finalizado" : norm(c.status)==="en proceso" ? "En proceso" : "Pendiente";
           const statusBg    = norm(c.status)==="finalizado" ? "var(--green-light)" : norm(c.status)==="en proceso" ? "var(--blue-light)" : "var(--amber-light)";
           return `<div style="padding:14px 0;border-bottom:1px solid var(--gray-100)">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-              <div style="width:8px;height:8px;border-radius:50%;background:${statusColor};flex-shrink:0"></div>
-              <div style="flex:1;font-size:13px;font-weight:500">${c.campana}</div>
-              <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;background:${statusBg};color:${statusColor}">${statusLabel}</span>
-              <div style="font-size:11px;color:var(--gray-500)">${c.marca} · ${c.fecha_inicio}–${c.fecha_fin}</div>
+            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+              <div style="width:8px;height:8px;border-radius:50%;background:${statusColor};flex-shrink:0;margin-top:5px"></div>
+              <div style="flex:1;min-width:140px;font-size:13px;font-weight:500">${c.campana}</div>
+              <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;background:${statusBg};color:${statusColor};white-space:nowrap;flex-shrink:0">${statusLabel}</span>
+              <div style="font-size:11px;color:var(--gray-500);width:100%;padding-left:18px">${c.marca} · ${c.fecha_inicio}–${c.fecha_fin}</div>
             </div>
             <div style="display:grid;grid-template-columns:${rGrid(4)};gap:8px;font-size:12px">
               <div><div style="color:var(--gray-500);margin-bottom:2px">Subtotal campaña</div><div style="font-weight:500">${fmt(c.subtotal)}</div></div>
