@@ -58,17 +58,18 @@
     --gray-100: #2A271F;
     --gray-200: #38342B;
     --gray-500: #A39C8E;
+    --gray-700: #D9D5CE;
   }
   [data-theme="dark"] body { background: var(--bg-page); color: var(--text-primary); }
   [data-theme="dark"] .login-right { background: var(--bg-page); }
-  [data-theme="dark"] .kpi-card.accent { background: var(--black) !important; border-color: var(--black) !important; }
+  [data-theme="dark"] .kpi-card.accent { background: var(--black) !important; border-color: var(--text-primary) !important; }
   [data-theme="dark"] .dash-inner, [data-theme="dark"] #dash-page { background: var(--bg-page); }
   [data-theme="dark"] .camp-name, [data-theme="dark"] .camp-amount,
   [data-theme="dark"] .kpi-val, [data-theme="dark"] h1, [data-theme="dark"] h2 { color: var(--text-primary); }
   [data-theme="dark"] .campaign-table td, [data-theme="dark"] .history-table td { color: var(--text-primary); border-color: var(--border-color-soft) !important; }
   [data-theme="dark"] .campaign-table th, [data-theme="dark"] .history-table th { border-color: var(--border-color-soft) !important; }
-  [data-theme="dark"] div[style*="background:#F7F5F2"],
-  [data-theme="dark"] div[style*="background: #F7F5F2"],
+  [data-theme="dark"] div[style*="background:var(--bg-surface-2)"],
+  [data-theme="dark"] div[style*="background: var(--bg-surface-2)"],
   [data-theme="dark"] div[style*="background:var(--gray-100)"] { background: var(--bg-surface-2) !important; }
   [data-theme="dark"] .ppill { color: var(--text-secondary); }
   [data-theme="dark"] .ppill.active { background: var(--red) !important; color: white !important; }
@@ -89,7 +90,9 @@
   }
   .theme-toggle:hover { border-color: var(--red); color: var(--red); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--black); }
+  html { color-scheme: light; }
+  [data-theme="dark"] { color-scheme: dark; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-primary); }
 
   /* LOGIN */
   #login-page { min-height: 100vh; display: flex; background: var(--black); }
@@ -110,7 +113,7 @@
   .login-right p { font-size: 13px; color: var(--gray-500); margin-bottom: 36px; }
   .field { margin-bottom: 18px; }
   .field label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 8px; }
-  .field input { width: 100%; padding: 14px 16px; background: var(--bg-surface); border: 1.5px solid var(--gray-200); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--black); transition: border-color 0.2s; outline: none; }
+  .field input { width: 100%; padding: 14px 16px; background: var(--bg-surface); border: 1.5px solid var(--gray-200); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary); transition: border-color 0.2s; outline: none; }
   .field input:focus { border-color: var(--red); }
   .btn-enter { width: 100%; padding: 16px; background: var(--red); color: white; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; margin-top: 8px; }
   .btn-enter:hover { background: var(--red-dark); }
@@ -140,7 +143,7 @@
   /* NAV */
   .section-nav { display: flex; gap: 0; border-bottom: 1.5px solid var(--gray-200); margin-bottom: 28px; }
   .snav-item { padding: 10px 22px; font-size: 13px; font-weight: 500; color: var(--gray-500); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; transition: color 0.15s, border-color 0.15s; }
-  .snav-item:hover { color: var(--black); }
+  .snav-item:hover { color: var(--text-primary); }
   .snav-item.active { color: var(--red); border-bottom-color: var(--red); }
   .dash-section { display: none; }
   .dash-section.active { display: block; }
@@ -149,7 +152,7 @@
   .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
   .kpi-card { background: var(--bg-surface); border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; transition: transform 0.15s; animation: fadeUp 0.4s ease both; }
   .kpi-card:hover { transform: translateY(-2px); }
-  .kpi-card.accent { background: var(--black); border-color: var(--black); }
+  .kpi-card.accent { background: var(--black); border-color: var(--text-primary); }
   .kpi-label { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 6px; }
   .kpi-card.accent .kpi-label { color: rgba(255,255,255,0.4); }
   .kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 0.5px; line-height: 1; }
@@ -163,7 +166,7 @@
   .status-item { background: var(--bg-surface); border: 1px solid var(--gray-200); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
   .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .status-item-text { font-size: 12px; color: var(--gray-500); }
-  .status-item-text strong { display: block; font-size: 16px; color: var(--black); font-weight: 500; margin-bottom: 1px; }
+  .status-item-text strong { display: block; font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 1px; }
   .por-cobrar-alert { background: var(--amber-light); border: 1px solid #FDE68A; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--amber); margin-bottom: 16px; }
   .camp-status { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; }
   .status-active { background: var(--green-light); color: var(--green); }
@@ -197,14 +200,14 @@
   .ptab { padding: 7px 18px; border-radius: 50px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--gray-200); color: var(--gray-500); background: var(--bg-surface); transition: all 0.15s; }
   .ptab:hover { border-color: var(--red); color: var(--red); }
   .ptab.active { background: var(--red); color: white; border-color: var(--red); }
-  .ptab.tiktok.active { background: var(--black); border-color: var(--black); }
+  .ptab.tiktok.active { background: var(--black); border-color: var(--text-primary); }
   .ptab.ventas.active { background: var(--green); border-color: var(--green); }
 
   .perf-kpi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
   .perf-kpi { border-radius: 12px; padding: 18px; border: 1px solid var(--gray-200); background: var(--bg-surface); }
   .perf-kpi-icon { font-size: 20px; margin-bottom: 10px; }
   .perf-kpi-label { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); margin-bottom: 5px; }
-  .perf-kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 30px; line-height: 1; color: var(--black); }
+  .perf-kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 30px; line-height: 1; color: var(--text-primary); }
   .perf-kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 500; margin-top: 5px; padding: 2px 8px; border-radius: 50px; }
   .delta-up { background: var(--green-light); color: var(--green); }
   .delta-down { background: #FEE2E2; color: #991B1B; }
@@ -217,10 +220,10 @@
   .history-table { width: 100%; border-collapse: collapse; }
   .history-table th { font-size: 10px; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gray-500); padding: 0 8px 10px 0; text-align: right; border-bottom: 1px solid var(--gray-100); }
   .history-table th:first-child { text-align: left; padding-left: 0; }
-  .history-table td { font-size: 12px; padding: 10px 8px 10px 0; border-bottom: 1px solid var(--gray-100); text-align: right; color: var(--black); }
+  .history-table td { font-size: 12px; padding: 10px 8px 10px 0; border-bottom: 1px solid var(--gray-100); text-align: right; color: var(--text-primary); }
   .history-table td:first-child { text-align: left; padding-left: 0; font-weight: 500; }
   .history-table tr:last-child td { border-bottom: none; }
-  .history-table tr.latest td { background: #FFFBF5; }
+  .history-table tr.latest td { background: var(--bg-surface-2); }
   .badge-new { background: var(--red); color: white; font-size: 9px; font-weight: 500; padding: 1px 6px; border-radius: 50px; margin-left: 6px; vertical-align: middle; }
   .chg-up { color: var(--green); font-size: 11px; }
   .chg-dn { color: #DC2626; font-size: 11px; }
@@ -248,7 +251,7 @@
     color: var(--gray-500); cursor: pointer; transition: all 0.15s; border: none;
     background: transparent; font-family: 'DM Sans', sans-serif; white-space: nowrap;
   }
-  .ppill:hover { color: var(--black); }
+  .ppill:hover { color: var(--text-primary); }
   .ppill.active { background: var(--black); color: white; }
 
   .period-comparison {
@@ -356,7 +359,7 @@
   <div class="login-right">
     <!-- Tabs -->
     <div style="display:flex;gap:0;border-bottom:1.5px solid var(--gray-200);margin-bottom:28px">
-      <button id="tab-login" onclick="switchLoginTab('login')" style="flex:1;background:none;border:none;border-bottom:2.5px solid var(--red);margin-bottom:-1.5px;padding:10px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--black);cursor:pointer">Iniciar sesión</button>
+      <button id="tab-login" onclick="switchLoginTab('login')" style="flex:1;background:none;border:none;border-bottom:2.5px solid var(--red);margin-bottom:-1.5px;padding:10px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text-primary);cursor:pointer">Iniciar sesión</button>
       <button id="tab-register" onclick="switchLoginTab('register')" style="flex:1;background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;padding:10px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer">Crear cuenta</button>
     </div>
 
@@ -368,7 +371,7 @@
       <div class="field">
         <label>Contraseña</label>
         <div style="position:relative">
-          <input type="password" id="pass-input" placeholder="••••••••" style="width:100%;padding:14px 44px 14px 16px;background:white;border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
+          <input type="password" id="pass-input" placeholder="••••••••" style="width:100%;padding:14px 44px 14px 16px;background:var(--bg-surface);border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-primary);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
           <button onclick="togglePass('pass-input',this)" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);padding:0;line-height:1">👁</button>
         </div>
       </div>
@@ -387,14 +390,14 @@
       <div class="field">
         <label>Nueva contraseña</label>
         <div style="position:relative">
-          <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" style="width:100%;padding:14px 44px 14px 16px;background:white;border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
+          <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" style="width:100%;padding:14px 44px 14px 16px;background:var(--bg-surface);border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-primary);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
           <button onclick="togglePass('reg-pass',this)" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);padding:0;line-height:1">👁</button>
         </div>
       </div>
       <div class="field">
         <label>Confirmar contraseña</label>
         <div style="position:relative">
-          <input type="password" id="reg-pass2" placeholder="Repite tu contraseña" style="width:100%;padding:14px 44px 14px 16px;background:white;border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
+          <input type="password" id="reg-pass2" placeholder="Repite tu contraseña" style="width:100%;padding:14px 44px 14px 16px;background:var(--bg-surface);border:1.5px solid var(--gray-200);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-primary);transition:border-color 0.2s;outline:none" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--gray-200)'"/>
           <button onclick="togglePass('reg-pass2',this)" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);padding:0;line-height:1">👁</button>
         </div>
       </div>
@@ -451,7 +454,7 @@
       <h1>Hola, <span id="dash-name">--</span></h1>
       <div id="year-selector-wrap" style="display:flex;align-items:center;gap:10px">
         <div class="period" id="dash-period">Campañas</div>
-        <div style="display:flex;align-items:center;gap:6px;background:white;border:1px solid var(--gray-200);border-radius:8px;padding:4px 10px">
+        <div style="display:flex;align-items:center;gap:6px;background:var(--bg-surface);border:1px solid var(--gray-200);border-radius:8px;padding:4px 10px">
           <button onclick="changeYear(-1)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gray-500);padding:0 4px;line-height:1;font-family:'DM Sans',sans-serif" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--gray-500)'">←</button>
           <span id="year-display" style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;min-width:44px;text-align:center"></span>
           <button onclick="changeYear(1)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--gray-500);padding:0 4px;line-height:1;font-family:'DM Sans',sans-serif" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--gray-500)'">→</button>
@@ -477,7 +480,7 @@
       </div>
       <div class="two-col">
         <div class="panel">
-          <div class="panel-title"><span>Mis campañas</span><span id="camp-count" style="color:var(--black);font-size:13px;letter-spacing:0;text-transform:none;font-weight:500"></span></div>
+          <div class="panel-title"><span>Mis campañas</span><span id="camp-count" style="color:var(--text-primary);font-size:13px;letter-spacing:0;text-transform:none;font-weight:500"></span></div>
           <div id="camp-table"></div>
         </div>
         <div>
@@ -538,6 +541,8 @@
 <script>
 
 const norm = s => String(s||"").trim().toLowerCase().replace(/\s+/g," ");
+function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function chartGridColor() { return document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"; }
 
 function rGrid(cols) {
   return window.innerWidth <= 640
@@ -793,6 +798,13 @@ function applyTheme(theme) {
 function toggleTheme() {
   const current = localStorage.getItem("colab_theme") || "light";
   applyTheme(current === "dark" ? "light" : "dark");
+  // Re-render charts so canvas colors (grid/ticks) match the new theme
+  if (currentUser) {
+    const perfSection = document.getElementById("sec-performance");
+    if (perfSection && perfSection.classList.contains("active")) {
+      renderPerformance(currentUser, currentPlatform);
+    }
+  }
 }
 
 (function initTheme() {
@@ -876,10 +888,10 @@ function switchLoginTab(tab) {
 
   if (tab === "login") {
     document.getElementById("form-login").style.display = "block";
-    if (tabLogin) { tabLogin.style.borderBottomColor = "var(--red)"; tabLogin.style.color = "var(--black)"; }
+    if (tabLogin) { tabLogin.style.borderBottomColor = "var(--red)"; tabLogin.style.color = "var(--text-primary)"; }
   } else if (tab === "register") {
     document.getElementById("form-register").style.display = "block";
-    if (tabReg) { tabReg.style.borderBottomColor = "var(--red)"; tabReg.style.color = "var(--black)"; }
+    if (tabReg) { tabReg.style.borderBottomColor = "var(--red)"; tabReg.style.color = "var(--text-primary)"; }
     // Listen for password strength
     const p = document.getElementById("reg-pass");
     if (p && !p._strengthBound) {
@@ -1029,7 +1041,7 @@ function toggleAdminMenu() {
     const isOnAdmin = document.getElementById("sec-admin").classList.contains("active");
     // Admin dashboard option at top
     const adminOption = `<button onclick="adminGoHome()"
-      style="width:100%;padding:10px 16px;background:${isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-100)"
+      style="width:100%;padding:10px 16px;background:${isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-100)"
       onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${isOnAdmin?"var(--off-white)":"none'"}">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">⚡</div>
       <div>
@@ -1040,7 +1052,7 @@ function toggleAdminMenu() {
     </button>`;
     list.innerHTML = adminOption + Object.values(TALENTS).filter(t => t.clave !== "ADMIN").map(t => `
       <button onclick="adminSwitchTo('${t.email}')"
-        style="width:100%;padding:10px 16px;background:${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);cursor:pointer;display:flex;align-items:center;gap:10px"
+        style="width:100%;padding:10px 16px;background:${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:10px"
         onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none'"}">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:12px;color:white;flex-shrink:0">${initials(t.nombre)}</div>
         <div>
@@ -1359,7 +1371,7 @@ function renderCampanas(user, camps) {
   ];
   document.getElementById("ratios-bar").innerHTML = ratioCards.map(r => `
     <div onclick="showDetailModal('${r.tipo}',currentUser)"
-      style="background:white;border:1px solid var(--gray-200);border-radius:10px;padding:16px 18px;cursor:pointer;transition:box-shadow 0.15s,transform 0.1s"
+      style="background:var(--bg-surface);border:1px solid var(--gray-200);border-radius:10px;padding:16px 18px;cursor:pointer;transition:box-shadow 0.15s,transform 0.1s"
       onmouseenter="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)';this.style.transform='translateY(-1px)'"
       onmouseleave="this.style.boxShadow='';this.style.transform=''">
       <div style="font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500);margin-bottom:6px">${r.l}</div>
@@ -1556,7 +1568,7 @@ function renderAdminDashboard() {
           </tr>`).join("")}
         </tbody>
         <tfoot>
-          <tr style="border-top:2px solid var(--black);background:#FAFAF8">
+          <tr style="border-top:2px solid var(--text-primary);background:var(--bg-surface-2)">
             <td style="font-family:'Bebas Neue',sans-serif;font-size:14px;padding-top:12px;letter-spacing:1px">TOTAL</td>
             <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:20px;padding-top:12px">${allCamps.length}</td>
             <td style="text-align:right;font-weight:700;padding-top:12px">${fmt(totalSub)}</td>
@@ -1572,7 +1584,7 @@ function renderAdminDashboard() {
 
     <!-- Todas las campañas -->
     <div class="panel">
-      <div class="panel-title">Todas las campañas <span style="font-size:11px;color:var(--black);letter-spacing:0;text-transform:none;font-weight:500">${allCamps.length} total</span></div>
+      <div class="panel-title">Todas las campañas <span style="font-size:11px;color:var(--text-primary);letter-spacing:0;text-transform:none;font-weight:500">${allCamps.length} total</span></div>
       <div style="overflow-x:auto">
       <table class="campaign-table">
         <thead><tr>
@@ -1600,7 +1612,7 @@ function renderAdminDashboard() {
                   <span style="font-size:12px;font-weight:500">${tal?tal.apodo:c.talento_clave}</span>
                 </div>
               </td>
-              <td style="font-size:12px;color:var(--gray-500)">${c.agencia}<br><span style="color:var(--black);font-weight:500">${c.marca}</span></td>
+              <td style="font-size:12px;color:var(--gray-500)">${c.agencia}<br><span style="color:var(--text-primary);font-weight:500">${c.marca}</span></td>
               <td style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio}<br>→ ${c.fecha_fin}</td>
               <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
               <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
@@ -1626,7 +1638,7 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
         const sc = norm(c.status);
         const color = sc==="finalizado"?"var(--green)":sc==="en proceso"?"var(--blue)":"var(--amber)";
         const bg    = sc==="finalizado"?"var(--green-light)":sc==="en proceso"?"var(--blue-light)":"var(--amber-light)";
-        return `<div style="border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:10px;background:white">
+        return `<div style="border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:10px;background:var(--bg-surface)">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
             <div>
               <div style="font-weight:600;font-size:14px;margin-bottom:2px">${c.campana}</div>
@@ -1669,7 +1681,7 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
         </div>`;
       }).join("")}
       <!-- Totales mobile -->
-      <div style="border:2px solid var(--black);border-radius:12px;padding:16px;background:#FAFAF8;margin-top:4px">
+      <div style="border:2px solid var(--text-primary);border-radius:12px;padding:16px;background:var(--bg-surface-2);margin-top:4px">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;margin-bottom:12px">TOTALES</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
           <div><div style="color:var(--gray-500);margin-bottom:2px">Subtotal campaña</div><div style="font-weight:600">${fmt(sub)}</div></div>
@@ -1712,7 +1724,7 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
       <td><span class="camp-status ${norm(c.status)==="en proceso"?"status-active":"status-pending"}">${c.status}</span>${c.cfdi?`<div style="font-size:10px;color:var(--gray-500);margin-top:4px">📄 CFDI</div>`:""}</td>
     </tr>`).join("")}</tbody>
     <tfoot>
-      <tr style="border-top:2px solid var(--black);background:#FAFAF8">
+      <tr style="border-top:2px solid var(--text-primary);background:var(--bg-surface-2)">
         <td colspan="2" style="font-family:'Bebas Neue',sans-serif;font-size:14px;padding-top:14px;padding-bottom:10px;letter-spacing:1px">TOTAL</td>
         <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(sub)}</td>
         <td style="text-align:right;color:var(--red);font-weight:700;padding-top:14px">− ${fmt(feeAmt)}</td>
@@ -1798,7 +1810,7 @@ function renderKpis(user, camps) {
         html += `<div class="panel" style="margin-bottom:0">
           <div class="panel-title">📸 Instagram <span style="font-size:10px;color:var(--gray-500);letter-spacing:0;text-transform:none;font-weight:400">@${user.instagram || "—"} · ${igLatest.fecha}${igYoY ? ` · vs ${igYoY.fecha}` : ""}</span></div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-            ${kpiBox("👥","Seguidores",fmtNum(igLatest.seguidores),dSeg,"var(--black)")}
+            ${kpiBox("👥","Seguidores",fmtNum(igLatest.seguidores),dSeg,"var(--text-primary)")}
             ${kpiBox("💬","Engagement",igLatest.engagement.toFixed(1)+"%",dEng,"var(--purple)")}
             ${kpiBox("📢","Alcance",fmtNum(igLatest.alcance),dAlc,"var(--blue)")}
           </div>
@@ -1813,7 +1825,7 @@ function renderKpis(user, camps) {
         html += `<div class="panel" style="margin-bottom:0">
           <div class="panel-title">🎵 TikTok <span style="font-size:10px;color:var(--gray-500);letter-spacing:0;text-transform:none;font-weight:400">@${user.tiktok || "—"} · ${ttLatest.fecha}${ttYoY ? ` · vs ${ttYoY.fecha}` : ""}</span></div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-            ${kpiBox("👥","Seguidores",fmtNum(ttLatest.seguidores),dSeg,"var(--black)")}
+            ${kpiBox("👥","Seguidores",fmtNum(ttLatest.seguidores),dSeg,"var(--text-primary)")}
             ${kpiBox("▶️","Repros",fmtNum(ttLatest.repros),dRep,"var(--red)")}
             ${kpiBox("💬","Engagement",ttLatest.engagement.toFixed(1)+"%",dEng,"var(--purple)")}
           </div>
@@ -1957,7 +1969,7 @@ function renderPerformance(user, plat) {
   ];
 
   el.innerHTML = `
-    ${handle ? `<div style="font-size:12px;color:var(--gray-500);margin-bottom:16px">@${handle} · Datos más recientes: <strong style="color:var(--black)">${latest.fecha}</strong></div>` : ""}
+    ${handle ? `<div style="font-size:12px;color:var(--gray-500);margin-bottom:16px">@${handle} · Datos más recientes: <strong style="color:var(--text-primary)">${latest.fecha}</strong></div>` : ""}
 
     <div class="insight-strip">
       <div class="insight-item"><div class="insight-label">Crecimiento seguidores</div><div class="insight-val" style="color:var(--red)">${growthTotal >= 0 ? "+" : ""}${growthTotal}%</div><div class="insight-sub">${periodLabel}</div></div>
@@ -2028,8 +2040,8 @@ function renderPerformance(user, plat) {
   });
 
   const labels = data.map(d => d.fecha);
-  const gridColor = "rgba(0,0,0,0.05)";
-  const tickColor = "#8A857D";
+  const gridColor = chartGridColor();
+  const tickColor = cssVar("--gray-500") || "#8A857D";
   const baseOpts = {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false } },
@@ -2168,7 +2180,7 @@ function renderVentasCampanas(user, period) {
         { l:"Agencias",      v: agencias.length, s: agencias.join(", ") },
         { l:"Total talento", v: fmtK(totalT),  s:"después de retenciones" },
       ].map(r => `
-        <div style="background:white;border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px">
+        <div style="background:var(--bg-surface);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px">
           <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500);margin-bottom:5px">${r.l}</div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1">${r.v}</div>
           <div style="font-size:11px;color:var(--gray-500);margin-top:3px">${r.s}</div>
@@ -2184,13 +2196,13 @@ function renderVentasCampanas(user, period) {
       <div class="panel" style="margin-bottom:0">
         <div class="panel-title">Desglose financiero</div>
         ${[
-          ["Subtotal campaña",   fmt(sub),           "var(--black)",    false],
+          ["Subtotal campaña",   fmt(sub),           "var(--text-primary)",    false],
           ["Fee agencia",        "− "+fmt(feeAmt),   "var(--red)",      false],
           ["Subtotal talento",   fmt(subT),          "var(--green)",    true ],
           ["IVA",                fmt(ivaAmt),        "var(--gray-500)", false],
           ["IVA Retenido",       "− "+fmt(ivaRet),   "var(--gray-500)", false],
           ["ISR Retenido",       "− "+fmt(isrRet),   "var(--gray-500)", false],
-          ["Total talento",      fmt(totalT),        "var(--black)",    true ],
+          ["Total talento",      fmt(totalT),        "var(--text-primary)",    true ],
           ["Cobrado talento",    fmt(cobradoT),      "var(--green)",    false],
           ["Por cobrar talento", fmt(porCobT),       "var(--amber)",    false],
         ].map(([l,v,c,bold]) => `
@@ -2205,7 +2217,7 @@ function renderVentasCampanas(user, period) {
     <div class="panel" style="margin-bottom:16px">
       <div class="panel-title">
         Detalle de campañas
-        <span style="font-size:11px;color:var(--black);letter-spacing:0;text-transform:none;font-weight:500">${campsForTable.length} total</span>
+        <span style="font-size:11px;color:var(--text-primary);letter-spacing:0;text-transform:none;font-weight:500">${campsForTable.length} total</span>
       </div>
       <div style="overflow-x:auto">
       <table class="campaign-table">
@@ -2230,7 +2242,7 @@ function renderVentasCampanas(user, period) {
         <tbody>
           ${campsForTable.map(c => `<tr>
             <td><div class="camp-name">${c.campana}</div><div style="font-size:10px;color:var(--gray-500)">${c.id}</div></td>
-            <td style="font-size:12px;color:var(--gray-500)">${c.agencia}<br><span style="color:var(--black);font-weight:500">${c.marca}</span></td>
+            <td style="font-size:12px;color:var(--gray-500)">${c.agencia}<br><span style="color:var(--text-primary);font-weight:500">${c.marca}</span></td>
             <td style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio}<br>→ ${c.fecha_fin}</td>
             <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
             <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
@@ -2246,7 +2258,7 @@ function renderVentasCampanas(user, period) {
           </tr>`).join("")}
         </tbody>
         <tfoot>
-          <tr style="border-top:2px solid var(--black)">
+          <tr style="border-top:2px solid var(--text-primary)">
             <td colspan="3" style="font-weight:600;font-size:12px;padding-top:12px">TOTALES</td>
             <td style="text-align:right;font-weight:600;padding-top:12px">${fmt(sub)}</td>
             <td style="text-align:right;color:var(--red);font-weight:600;padding-top:12px">− ${fmt(feeAmt)}</td>
@@ -2285,8 +2297,8 @@ function renderVentasCampanas(user, period) {
     delete chartInstances["chart-ventas-mes"];
   }
 
-  const gridColor = "rgba(0,0,0,0.05)";
-  const tickColor = "#8A857D";
+  const gridColor = chartGridColor();
+  const tickColor = cssVar("--gray-500") || "#8A857D";
   chartInstances["chart-ventas-mes"] = new Chart(document.getElementById("chart-ventas-mes"), {
     type: "bar",
     data: {
@@ -2346,25 +2358,25 @@ function showCobrarModal(user) {
   document.getElementById("modal-cobrar-total-val").textContent = "$" + Math.round(total).toLocaleString("es-MX");
 
   if (camps.length === 0) {
-    document.getElementById("modal-cobrar-content").innerHTML = `<div style="text-align:center;padding:24px;color:#8A857D">No hay campañas con saldo pendiente.</div>`;
+    document.getElementById("modal-cobrar-content").innerHTML = `<div style="text-align:center;padding:24px;color:var(--gray-500)">No hay campañas con saldo pendiente.</div>`;
   } else {
     document.getElementById("modal-cobrar-content").innerHTML = camps.map(c => `
       <div style="padding:16px 0;border-bottom:1px solid #F0EDE8">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
           <div>
             <div style="font-size:14px;font-weight:600">${c.campana}</div>
-            <div style="font-size:11px;color:#8A857D;margin-top:2px">${c.id} · ${c.agencia} · ${c.marca}</div>
-            <div style="font-size:11px;color:#8A857D">${c.fecha_inicio} → ${c.fecha_fin}</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.id} · ${c.agencia} · ${c.marca}</div>
+            <div style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio} → ${c.fecha_fin}</div>
           </div>
           <span style="background:#FEF3C7;color:#D97706;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap">${c.status}</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <div style="background:#F7F5F2;border-radius:8px;padding:10px">
-            <div style="font-size:10px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Subtotal talento</div>
+          <div style="background:var(--bg-surface-2);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Subtotal talento</div>
             <div style="font-size:14px;font-weight:500">$${Math.round(c.sub_t).toLocaleString("es-MX")}</div>
           </div>
-          <div style="background:#F7F5F2;border-radius:8px;padding:10px">
-            <div style="font-size:10px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Total talento</div>
+          <div style="background:var(--bg-surface-2);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Total talento</div>
             <div style="font-size:14px;font-weight:600">$${Math.round(c.total_t).toLocaleString("es-MX")}</div>
           </div>
           <div style="background:#FEF3C7;border-radius:8px;padding:10px">
@@ -2457,14 +2469,14 @@ function showKpiModal(tipo, user) {
   document.getElementById("modal-cobrar-subtitle").textContent = cfg.subtitle;
 
   document.getElementById("modal-cobrar-content").innerHTML = camps.length === 0
-    ? `<div style="text-align:center;padding:24px;color:#8A857D">Sin datos para mostrar.</div>`
+    ? `<div style="text-align:center;padding:24px;color:var(--gray-500)">Sin datos para mostrar.</div>`
     : camps.map(c => `
       <div style="padding:16px 0;border-bottom:1px solid #F0EDE8">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
             <div style="font-size:14px;font-weight:600">${c.campana}</div>
-            <div style="font-size:11px;color:#8A857D;margin-top:2px">${c.id} · ${c.agencia} · ${c.marca}</div>
-            <div style="font-size:11px;color:#8A857D">${c.fecha_inicio} → ${c.fecha_fin}</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.id} · ${c.agencia} · ${c.marca}</div>
+            <div style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio} → ${c.fecha_fin}</div>
           </div>
           <div style="text-align:right">
             <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${cfg.color}">$${Math.round(cfg.field(c)).toLocaleString("es-MX")}</div>
@@ -2473,8 +2485,8 @@ function showKpiModal(tipo, user) {
         </div>
         <div style="display:grid;grid-template-columns:repeat(${cfg.rows(c).length},1fr);gap:8px">
           ${cfg.rows(c).map(r=>`
-            <div style="background:#F7F5F2;border-radius:8px;padding:10px;${r.bold?"border:1px solid "+cfg.color:""}">
-              <div style="font-size:10px;color:#8A857D;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">${r.l}</div>
+            <div style="background:var(--bg-surface-2);border-radius:8px;padding:10px;${r.bold?"border:1px solid "+cfg.color:""}">
+              <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">${r.l}</div>
               <div style="font-size:13px;font-weight:${r.bold?700:500};color:${r.color}">$${Math.round(Math.abs(r.v)).toLocaleString("es-MX")}${r.v<0?" (ret.)":""}</div>
             </div>`).join("")}
         </div>
@@ -2544,14 +2556,14 @@ function showDetailModal(tipo, user) {
   document.getElementById("modal-detail-total-val").style.color = cfg.color;
 
   document.getElementById("modal-detail-content").innerHTML = camps.length === 0
-    ? `<div style="text-align:center;padding:32px;color:#8A857D">No hay campañas en esta categoría.</div>`
+    ? `<div style="text-align:center;padding:32px;color:var(--gray-500)">No hay campañas en esta categoría.</div>`
     : camps.map(c => `
       <div style="padding:16px 0;border-bottom:1px solid #F0EDE8">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
           <div>
             <div style="font-size:14px;font-weight:600;margin-bottom:3px">${c.campana}</div>
-            <div style="font-size:11px;color:#8A857D">${c.id} · ${c.agencia} · ${c.marca}</div>
-            <div style="font-size:11px;color:#8A857D;margin-top:2px">${c.fecha_inicio} → ${c.fecha_fin}</div>
+            <div style="font-size:11px;color:var(--gray-500)">${c.id} · ${c.agencia} · ${c.marca}</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.fecha_inicio} → ${c.fecha_fin}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;margin-left:12px">
             ${cfg.tag(c)}
@@ -2559,16 +2571,16 @@ function showDetailModal(tipo, user) {
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <div style="background:#F7F5F2;border-radius:8px;padding:10px">
-            <div style="font-size:9px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Subtotal campaña</div>
+          <div style="background:var(--bg-surface-2);border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Subtotal campaña</div>
             <div style="font-size:13px;font-weight:500">${fmt(c.subtotal)}</div>
           </div>
-          <div style="background:#F7F5F2;border-radius:8px;padding:10px">
-            <div style="font-size:9px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Subtotal talento</div>
+          <div style="background:var(--bg-surface-2);border-radius:8px;padding:10px">
+            <div style="font-size:9px;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Subtotal talento</div>
             <div style="font-size:13px;font-weight:500;color:#1A8C5B">${fmt(c.sub_t)}</div>
           </div>
           <div style="background:${c.por_cobrar_t>0?"#FEF3C7":"#D1FAE5"};border-radius:8px;padding:10px">
-            <div style="font-size:9px;color:#8A857D;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Por cobrar talento</div>
+            <div style="font-size:9px;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Por cobrar talento</div>
             <div style="font-size:13px;font-weight:600;color:${c.por_cobrar_t>0?"#D97706":"#1A8C5B"}">${c.por_cobrar_t>0?fmt(c.por_cobrar_t):"✓ Cobrado"}</div>
           </div>
         </div>
@@ -2583,13 +2595,13 @@ function showDetailModal(tipo, user) {
 
 <!-- MODAL: Por cobrar talento -->
 <div id="modal-cobrar" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:32px;max-width:640px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.2)">
-    <button onclick="document.getElementById('modal-cobrar').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#8A857D;line-height:1">✕</button>
-    <div id="modal-cobrar-title" style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:4px">Por Cobrar</div>
-    <div id="modal-cobrar-subtitle" style="font-size:13px;color:#8A857D;margin-bottom:24px">Campañas con saldo pendiente de cobro</div>
+  <div style="background:var(--bg-surface);border-radius:16px;padding:32px;max-width:640px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.2)">
+    <button onclick="document.getElementById('modal-cobrar').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-secondary);line-height:1">✕</button>
+    <div id="modal-cobrar-title" style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:4px;color:var(--text-primary)">Por Cobrar</div>
+    <div id="modal-cobrar-subtitle" style="font-size:13px;color:var(--text-secondary);margin-bottom:24px">Campañas con saldo pendiente de cobro</div>
     <div id="modal-cobrar-content"></div>
-    <div id="modal-cobrar-total" style="margin-top:20px;padding-top:16px;border-top:2px solid #0D0D0D;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:13px;font-weight:600">Total por cobrar</span>
+    <div id="modal-cobrar-total" style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border-color);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;font-weight:600;color:var(--text-primary)">Total por cobrar</span>
       <span id="modal-cobrar-total-val" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#D97706"></span>
     </div>
   </div>
@@ -2598,14 +2610,14 @@ function showDetailModal(tipo, user) {
 
 <!-- MODAL: Detalle de cards -->
 <div id="modal-detail" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:32px;max-width:640px;width:90%;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.2)">
-    <button onclick="document.getElementById('modal-detail').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#8A857D;line-height:1">✕</button>
-    <div id="modal-detail-title" style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:4px"></div>
-    <div id="modal-detail-subtitle" style="font-size:13px;color:#8A857D;margin-bottom:24px"></div>
+  <div style="background:var(--bg-surface);border-radius:16px;padding:32px;max-width:640px;width:90%;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.2)">
+    <button onclick="document.getElementById('modal-detail').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-secondary);line-height:1">✕</button>
+    <div id="modal-detail-title" style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:4px;color:var(--text-primary)"></div>
+    <div id="modal-detail-subtitle" style="font-size:13px;color:var(--text-secondary);margin-bottom:24px"></div>
     <div id="modal-detail-content"></div>
-    <div style="margin-top:20px;padding-top:16px;border-top:2px solid #0D0D0D;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:13px;font-weight:600">Subtotal total</span>
-      <span id="modal-detail-total-val" style="font-family:'Bebas Neue',sans-serif;font-size:28px"></span>
+    <div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border-color);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;font-weight:600;color:var(--text-primary)">Subtotal total</span>
+      <span id="modal-detail-total-val" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text-primary)"></span>
     </div>
   </div>
 </div>
