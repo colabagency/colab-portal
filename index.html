@@ -654,7 +654,7 @@ async function loadSheetData() {
   showLoader("Conectando con Google Sheets...");
   try {
     // ── Cargar talentos (hoja: Lista de Talento_Colab Agency)
-    const talentRows = await fetchSheetCSV("Lista de Talento_Colab Agency");
+    const talentRows = await fetchSheetCSV("Lista de Talento Activos_Colab Agency");
     if (talentRows.length > 0) talentRows.shift(); // remove header row
     TALENTS = {};
     for (const row of talentRows) {
