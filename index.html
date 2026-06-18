@@ -684,7 +684,7 @@ async function loadSheetData() {
     }
 
     // ── Cargar campañas (hoja: Ventas 2026_Colab Agency)
-    const campRows = await fetchSheetCSV("Ventas 2026_Colab Agency");
+    const campRows = await fetchSheetCSV("Ventas 2026");
     if (campRows.length > 0) campRows.shift(); // remove header row
     CAMPAIGNS = [];
     for (const row of campRows) {
