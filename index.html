@@ -573,10 +573,7 @@ let PERFORMANCE = {};
 /* ════════════════════════════════════════
    SHEET LOADER
 ════════════════════════════════════════ */
-async function fetchSheetCSV(gid) {
-  // Use Sheets API v4 — no CORS issues, works on Vercel
-  const sheetNames = { "1243275852": "Lista de Talento Activos", "0": "Ventas" };
-  const sheetName = sheetNames[gid] || gid;
+async function fetchSheetCSV(sheetName) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`;
   const res = await fetch(url);
   if (!res.ok) {
@@ -621,21 +618,26 @@ function formatDateLabel(dateStr) {
 
 function loadFallbackData() {
   TALENTS = {
-    nicolas:        { clave:"CA003", nombre:"NICOLAS VIVES DELGADO",  apodo:"Nico",        email:"nikovivesd@gmail.com",         pw:"colab2026", manager:"Mariana Llaneza", fee_pct:20, categoria:"Moda y Belleza, Lifestyle", instagram:"nico.vives",    tiktok:"nicoo.vives",   antiguedad:"2 meses" },
+    nicolas:        { clave:"CA003", nombre:"NICOLAS VIVES DELGADO",  apodo:"Nico",        email:"nikovivesd@gmail.com",         pw:"colab2026", manager:"Mariana Llaneza", fee_pct:20, categoria:"Moda y Belleza, Lifestyle", instagram:"nico.vives",    tiktok:"nicoo.vives",   antiguedad:"3 meses" },
     fernando_ochoa: { clave:"CA004", nombre:"FERNANDO OCHOA SOLÍS",   apodo:"Fernando O.", email:"imfersoliscontacto@gmail.com",  pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"IMFERSOLIS",    tiktok:"",              antiguedad:"2 meses" },
-    fernando_mayen: { clave:"CA008", nombre:"FERNANDO MAYEN",         apodo:"Fernando M.", email:"fermayen21@gmail.com",          pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"ferr.mayen",    tiktok:"fer.mayen",     antiguedad:"1 mes" },
+    fernando_mayen: { clave:"CA008", nombre:"FERNANDO MAYEN MARIN",   apodo:"Fernando M.", email:"fermayen21@gmail.com",          pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"ferr.mayen",    tiktok:"fer.mayen",     antiguedad:"2 meses" },
     rolando:        { clave:"CA009", nombre:"ROLANDO HERVERT",        apodo:"Rolando",     email:"rolando@colab.mx",              pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Comedia, Wellness",        instagram:"rolhervert",    tiktok:"rollhervert",   antiguedad:"1 mes" },
     patricio:       { clave:"CA010", nombre:"PATRICIO SANTANA",       apodo:"Patricio",    email:"patricio@colab.mx",             pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Deportista",               instagram:"patosantana11", tiktok:"",              antiguedad:"0 meses" },
-    gerardo:        { clave:"CA011", nombre:"GERARDO VILLA",          apodo:"Gerardo",     email:"gervilla13@gmail.com",          pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Moda y Belleza, Lifestyle", instagram:"gerardovillab", tiktok:"gerardovillab", antiguedad:"0 meses" },
+    gerardo:        { clave:"CA011", nombre:"GERARDO VILLA BRUNEL",   apodo:"Gerardo",     email:"gervilla13@gmail.com",          pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Moda y Belleza, Lifestyle", instagram:"gerardovillab", tiktok:"gerardovillab", antiguedad:"1 mes" },
+    daniela:        { clave:"CA012", nombre:"DANIELA RANGEL",         apodo:"Daniela",     email:"daniela@colab.mx",              pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"danielarangel.l",tiktok:"daniela.rangel",antiguedad:"0 meses" },
+    eduardo:        { clave:"CA013", nombre:"EDUARDO DAVID BECERRA",  apodo:"Eduardo",     email:"edb1998@gmail.com",             pw:"colab2026", manager:"Mariana Llaneza", fee_pct:20, categoria:"Wellness",                 instagram:"lalo_wellness", tiktok:"",              antiguedad:"0 meses" },
+    elke:           { clave:"CA014", nombre:"ELKE ORTH VELASCO",      apodo:"Elke",        email:"elkeorthv@gmail.com",           pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"elke.orth",     tiktok:"",              antiguedad:"0 meses" },
     ricardo:        { clave:"ADMIN", nombre:"RICARDO SALIDO",         apodo:"Ricardo",     email:"ricardo.salido@grupocfa.com",   pw:"Savi059_",  manager:"CO/LAB Agency",   fee_pct:0,  categoria:"Admin",                    instagram:"",              tiktok:"",              antiguedad:"—" },
   };
   CAMPAIGNS = [
-    { id:"26-1001", talento_clave:"CA003", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",    fecha_inicio:"31 Mar 2026", fecha_fin:"30 Abr 2026", status:"Finalizado",  subtotal:40000,   fee:8000,   sub_t:32000,   iva:5120,    iva_ret:3411.20, isr:3200,   total_t:30508.80,  cobrado_t:0, por_cobrar_t:30508.80,  cfdi:"UDI NIVEA SUN.pdf" },
-    { id:"26-1002", talento_clave:"CA004", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK",        fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso",  subtotal:145000,  fee:36250,  sub_t:108750,  iva:17400,   iva_ret:11592.75,isr:1359.38,total_t:113197.88, cobrado_t:0, por_cobrar_t:113197.88, cfdi:"" },
-    { id:"26-1003", talento_clave:"CA008", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK",        fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso",  subtotal:85000,   fee:21250,  sub_t:63750,   iva:10200,   iva_ret:6795.75, isr:6375,   total_t:60779.25,  cobrado_t:0, por_cobrar_t:60779.25,  cfdi:"" },
-    { id:"26-1010", talento_clave:"CA004", marca:"CAROLIN HERRERA", agencia:"VKNG GROUP", campana:"EVENTO 212 MANISON CH",     fecha_inicio:"4 Jun 2026",  fecha_fin:"4 Jun 2026",  status:"Finalizado",  subtotal:100000,  fee:25000,  sub_t:75000,   iva:12000,   iva_ret:7995,    isr:937.50, total_t:78067.50,  cobrado_t:0, por_cobrar_t:78067.50,  cfdi:"" },
-    { id:"26-1011", talento_clave:"CA008", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",    fecha_inicio:"1 Jun 2026",  fecha_fin:"30 Jun 2026", status:"Pendiente",   subtotal:20000,   fee:5000,   sub_t:15000,   iva:2400,    iva_ret:1599,    isr:1500,   total_t:14301,     cobrado_t:0, por_cobrar_t:14301,     cfdi:"" },
-    { id:"26-1013", talento_clave:"CA003", marca:"MINI COOPER",     agencia:"N/A",        campana:"PAUL SMITH X MINI COOPER",  fecha_inicio:"3 Jun 2026",  fecha_fin:"3 Jun 2026",  status:"Finalizado",  subtotal:55000,   fee:11000,  sub_t:44000,   iva:7040,    iva_ret:4690.40, isr:4400,   total_t:41949.60,  cobrado_t:0, por_cobrar_t:41949.60,  cfdi:"" },
+    { id:"26-1001", talento_clave:"CA003", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",   fecha_inicio:"1 Abr 2026",  fecha_fin:"30 Abr 2026", status:"Finalizado", subtotal:40000,  fee:8000,  sub_t:32000,  iva:5120,  iva_ret:3411.20, isr:3200,    total_t:30508.80,  cobrado_t:30508.80, por_cobrar_t:0,         cfdi:"UDI NIVEA SUN.pdf" },
+    { id:"26-1002", talento_clave:"CA004", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK",       fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso", subtotal:145000, fee:0,     sub_t:145000, iva:23200, iva_ret:15457,   isr:1812.50, total_t:150930.50, cobrado_t:0,         por_cobrar_t:150930.50, cfdi:"" },
+    { id:"26-1003", talento_clave:"CA008", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK",       fecha_inicio:"15 May 2026", fecha_fin:"15 Jun 2026", status:"En Proceso", subtotal:85000,  fee:0,     sub_t:85000,  iva:13600, iva_ret:9061,    isr:8500,    total_t:81039,     cobrado_t:0,         por_cobrar_t:81039,     cfdi:"" },
+    { id:"26-1010", talento_clave:"CA004", marca:"CAROLIN HERRERA", agencia:"VKNG GROUP", campana:"EVENTO 212 MANISON CH",    fecha_inicio:"4 Jun 2026",  fecha_fin:"4 Jun 2026",  status:"Finalizado", subtotal:100000, fee:0,     sub_t:100000, iva:16000, iva_ret:10660,   isr:1250,    total_t:104090,    cobrado_t:0,         por_cobrar_t:104090,    cfdi:"" },
+    { id:"26-1011", talento_clave:"CA008", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",   fecha_inicio:"1 Jun 2026",  fecha_fin:"30 Jun 2026", status:"Pendiente",  subtotal:20000,  fee:0,     sub_t:20000,  iva:3200,  iva_ret:2132,    isr:2000,    total_t:19068,     cobrado_t:0,         por_cobrar_t:19068,     cfdi:"" },
+    { id:"26-1012", talento_clave:"CA004", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",   fecha_inicio:"3 Jun 2026",  fecha_fin:"30 Jun 2026", status:"Pendiente",  subtotal:28000,  fee:0,     sub_t:28000,  iva:4480,  iva_ret:2984.80, isr:350,     total_t:29145.20,  cobrado_t:0,         por_cobrar_t:29145.20,  cfdi:"" },
+    { id:"26-1013", talento_clave:"CA003", marca:"MINI COOPER",     agencia:"N/A",        campana:"PAUL SMITH X MINI COOPER", fecha_inicio:"3 Jun 2026",  fecha_fin:"3 Jun 2026",  status:"Finalizado", subtotal:55000,  fee:0,     sub_t:55000,  iva:8800,  iva_ret:5863,    isr:5500,    total_t:52437,     cobrado_t:0,         por_cobrar_t:52437,     cfdi:"" },
+    { id:"26-1015", talento_clave:"CA011", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK",       fecha_inicio:"15 Jun 2026", fecha_fin:"30 Jun 2026", status:"Pendiente",  subtotal:30000,  fee:0,     sub_t:30000,  iva:4800,  iva_ret:0,       isr:0,       total_t:34800,     cobrado_t:0,         por_cobrar_t:34800,     cfdi:"" },
   ];
 }
 
@@ -651,8 +653,8 @@ async function loadSheetData() {
 
   showLoader("Conectando con Google Sheets...");
   try {
-    // ── Cargar talentos (hoja: Lista de Talento Activos)
-    const talentRows = await fetchSheetCSV("1243275852");
+    // ── Cargar talentos (hoja: Lista de Talento_Colab Agency)
+    const talentRows = await fetchSheetCSV("Lista de Talento_Colab Agency");
     if (talentRows.length > 0) talentRows.shift(); // remove header row
     TALENTS = {};
     for (const row of talentRows) {
@@ -682,7 +684,7 @@ async function loadSheetData() {
     }
 
     // ── Cargar campañas (hoja: Ventas)
-    const campRows = await fetchSheetCSV("0");
+    const campRows = await fetchSheetCSV("Ventas");
     if (campRows.length > 0) campRows.shift(); // remove header row
     CAMPAIGNS = [];
     for (const row of campRows) {
