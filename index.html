@@ -718,6 +718,8 @@ async function loadSheetData() {
     // ── Cargar campañas (hoja: Ventas 2026)
     const campRows = await fetchSheetCSV("Ventas");
     if (campRows.length > 0) campRows.shift(); // remove header row
+    // La hoja "Ventas" tiene una fila vacía tras el header — la omitimos
+    while (campRows.length > 0 && !(campRows[0][3]||"").trim()) campRows.shift();
     CAMPAIGNS = [];
     for (const row of campRows) {
       const id      = (row[3]||"").trim();
@@ -741,9 +743,18 @@ async function loadSheetData() {
       const cob_t   = parseNumber(row[27]);
       const por_t   = parseNumber(row[28]);
 
-      if (!id || !clave || !campana || sub === 0) continue;
+      // Si la columna F está vacía, intentar encontrar la clave por nombre
+      const claveResuelta = clave || (() => {
+        if (!nombre || nombre.toUpperCase() === "N/A") return "N/A";
+        const match = Object.values(TALENTS).find(t =>
+          t.nombre && t.nombre.toUpperCase() === nombre.toUpperCase()
+        );
+        return match ? match.clave : "N/A";
+      })();
+
+      if (!id || !campana || sub === 0) continue;
       CAMPAIGNS.push({
-        id, talento_clave: clave, nombre, manager,
+        id, talento_clave: claveResuelta, nombre, manager,
         campana, agencia, marca,
         fecha_inicio: formatDateLabel(fIni),
         fecha_fin:    formatDateLabel(fFin),
