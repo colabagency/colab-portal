@@ -716,7 +716,7 @@ async function loadSheetData() {
     }
 
     // ── Cargar campañas (hoja: Ventas 2026)
-    const campRows = await fetchSheetCSV("Ventas 2026");
+    const campRows = await fetchSheetCSV("Ventas");
     if (campRows.length > 0) campRows.shift(); // remove header row
     CAMPAIGNS = [];
     for (const row of campRows) {
