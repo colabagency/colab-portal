@@ -266,6 +266,10 @@
   @media (max-width: 900px) {
     .two-col { grid-template-columns: 1fr; }
     .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    .dash-inner { padding: 24px 20px; }
+    div[style*="repeat(4,1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
+    div[style*="repeat(4, 1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
+    div[style*="repeat(3,1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
   }
 
   /* ── MOBILE (≤640px) ── */
@@ -344,11 +348,40 @@
 
     /* Por cobrar / cobrado blocks */
     div[style*="1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+    /* Ratios bar → 1 col en móvil */
+    #ratios-bar { grid-template-columns: 1fr !important; }
+
+    /* Topbar compacta */
+    .topbar { height: 50px; }
+    .topbar-logo { font-size: 22px; }
+    .btn-logout { display: none; }
+
+    /* Scroll suave en nav */
+    .section-nav { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .section-nav::-webkit-scrollbar { display: none; }
+    .snav-item { flex-shrink: 0; }
+
+    /* Admin table responsive */
+    .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .admin-table-wrap table { min-width: 580px; font-size: 12px; }
+
+    /* repeat(3,1fr) → 1 col en móvil */
+    div[style*="repeat(3,1fr)"] { grid-template-columns: 1fr !important; }
+    div[style*="repeat(3, 1fr)"] { grid-template-columns: 1fr !important; }
+    div[style*="repeat(2,1fr)"] { grid-template-columns: 1fr !important; }
+    div[style*="repeat(2, 1fr)"] { grid-template-columns: 1fr !important; }
+
+    /* Year selector */
+    #year-selector-wrap { align-self: flex-start; }
+
+    /* Modal más grande en móvil */
+    #modal-cobrar > div { border-radius: 16px !important; }
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
-<body>
+<body style="overflow-x:hidden">
 
 <!-- LOGIN -->
 <div id="login-page">
@@ -1615,7 +1648,7 @@ function renderAdminDashboard() {
     <!-- Resumen por talento -->
     <div class="panel" style="margin-bottom:20px">
       <div class="panel-title">Resumen por talento</div>
-      <div style="overflow-x:auto">
+      <div class="admin-table-wrap" style="overflow-x:auto">
       <table class="campaign-table">
         <thead><tr>
           <th>Talento</th>
@@ -1665,7 +1698,7 @@ function renderAdminDashboard() {
     <!-- Todas las campañas -->
     <div class="panel">
       <div class="panel-title">Todas las campañas <span style="font-size:11px;color:var(--text-primary);letter-spacing:0;text-transform:none;font-weight:500">${allCamps.length} total</span></div>
-      <div style="overflow-x:auto">
+      <div class="admin-table-wrap" style="overflow-x:auto">
       <table class="campaign-table">
         <thead><tr>
           <th>Campaña</th>
@@ -2268,7 +2301,7 @@ function renderVentasCampanas(user, period) {
         Detalle de campañas
         <span style="font-size:11px;color:var(--text-primary);letter-spacing:0;text-transform:none;font-weight:500">${campsForTable.length} total</span>
       </div>
-      <div style="overflow-x:auto">
+      <div class="admin-table-wrap" style="overflow-x:auto">
       <table class="campaign-table">
         <thead>
           <tr>
@@ -2278,9 +2311,6 @@ function renderVentasCampanas(user, period) {
             <th style="text-align:right">Subtotal campaña</th>
             <th style="text-align:right">Fee agencia</th>
             <th style="text-align:right">Subtotal talento</th>
-            <th style="text-align:right">IVA</th>
-            <th style="text-align:right">IVA Ret.</th>
-            <th style="text-align:right">ISR Ret.</th>
             <th style="text-align:right">Total talento</th>
             <th style="text-align:right">Cobrado</th>
             <th style="text-align:right">Por cobrar</th>
@@ -2296,9 +2326,6 @@ function renderVentasCampanas(user, period) {
             <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
             <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
             <td style="text-align:right;color:var(--green);font-weight:500">${fmt(c.sub_t)}</td>
-            <td style="text-align:right;font-size:12px">${fmt(c.iva)}</td>
-            <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.iva_ret)}</td>
-            <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.isr)}</td>
             <td style="text-align:right;font-weight:600">${fmt(c.total_t)}</td>
             <td style="text-align:right;color:var(--green);font-size:12px">${c.cobrado_t > 0 ? fmt(c.cobrado_t) : "—"}</td>
             <td style="text-align:right;color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</td>
@@ -2312,9 +2339,6 @@ function renderVentasCampanas(user, period) {
             <td style="text-align:right;font-weight:600;padding-top:12px">${fmt(sub)}</td>
             <td style="text-align:right;color:var(--red);font-weight:600;padding-top:12px">− ${fmt(feeAmt)}</td>
             <td style="text-align:right;color:var(--green);font-weight:600;padding-top:12px">${fmt(subT)}</td>
-            <td style="text-align:right;font-weight:600;padding-top:12px">${fmt(ivaAmt)}</td>
-            <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:12px">− ${fmt(ivaRet)}</td>
-            <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:12px">− ${fmt(isrRet)}</td>
             <td style="text-align:right;font-weight:600;padding-top:12px">${fmt(totalT)}</td>
             <td style="text-align:right;color:var(--green);font-weight:600;padding-top:12px">${cobradoT > 0 ? fmt(cobradoT) : "—"}</td>
             <td style="text-align:right;color:var(--amber);font-weight:600;padding-top:12px">${fmt(porCobT)}</td>
