@@ -1219,9 +1219,8 @@ async function doLogin() {
   if (admin) {
     err.textContent = "";
     isAdmin = true;
-    // Admin entra viendo el primer talento disponible
-    const firstTalent = Object.values(TALENTS).filter(t => t.clave !== "ADMIN")[0] || admin;
-    currentUser = firstTalent;
+    // Admin entra con su propio perfil mostrado en el header
+    currentUser = admin;
     currentPlatform = "ig";
     // Show admin arrow and nav tab
     const arrow = document.getElementById("admin-arrow");
