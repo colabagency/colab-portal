@@ -658,7 +658,7 @@ function loadFallbackData() {
     eduardo:        { clave:"CA013", nombre:"EDUARDO DAVID BECERRA",  apodo:"Eduardo",     email:"edb1998@gmail.com",             pw:"colab2026", manager:"Mariana Llaneza", fee_pct:20, categoria:"Wellness",                 instagram:"lalo_wellness", tiktok:"",              contrato:"Con Exclusividad", antiguedad:"0 meses" },
     elke:           { clave:"CA014", nombre:"ELKE ORTH VELASCO",      apodo:"Elke",        email:"elkeorthv@gmail.com",           pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"elke.orth",     tiktok:"",              contrato:"Sin Exclusividad", antiguedad:"0 meses" },
     ricardo:        { clave:"ADMIN", nombre:"RICARDO SALIDO",         apodo:"Ricardo",     email:"ricardo.salido@grupocfa.com",   pw:"Savi059_",   manager:"CO/LAB Agency",   fee_pct:0,  categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
-    colab:          { clave:"ADMIN", nombre:"CO/LAB AGENCY",          apodo:"CO/LAB",      email:"hello@colabagency.mx",          pw:"Colab2026*", manager:"CO/LAB Agency",   fee_pct:0,  categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
+    colab:          { clave:"ADMIN", nombre:"MARIANA LLANEZA",         apodo:"Mariana",     email:"hello@colabagency.mx",          pw:"Colab2026*", manager:"CO/LAB Agency",   fee_pct:0,  categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
   };
   CAMPAIGNS = [
     { id:"26-1001", talento_clave:"CA003", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",   fecha_inicio:"1 Abr 2026",  fecha_fin:"30 Abr 2026", status:"Finalizado", subtotal:40000,  fee:8000,  sub_t:32000,  iva:5120,  iva_ret:3411.20, isr:3200,    total_t:30508.80,  cobrado_t:30508.80, por_cobrar_t:0,         cfdi:"UDI NIVEA SUN.pdf" },
@@ -1213,7 +1213,7 @@ async function doLogin() {
   // ── Admin hardcodeado — siempre funciona ──
   const ADMINS = [
     { clave:"ADMIN", nombre:"RICARDO SALIDO", apodo:"Ricardo", email:"ricardo.salido@grupocfa.com", pw:"Savi059_",   manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
-    { clave:"ADMIN", nombre:"CO/LAB AGENCY",  apodo:"CO/LAB",  email:"hello@colabagency.mx",        pw:"Colab2026*", manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" }
+    { clave:"ADMIN", nombre:"MARIANA LLANEZA",  apodo:"Mariana", email:"hello@colabagency.mx",        pw:"Colab2026*", manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" }
   ];
   const admin = ADMINS.find(a => a.email.toLowerCase() === email && a.pw === pw);
   if (admin) {
