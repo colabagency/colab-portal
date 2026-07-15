@@ -1219,7 +1219,6 @@ async function doLogin() {
   if (admin) {
     err.textContent = "";
     isAdmin = true;
-    // Admin entra con su propio perfil mostrado en el header
     currentUser = admin;
     currentPlatform = "ig";
     // Show admin arrow and nav tab
@@ -1782,9 +1781,6 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
       <th style="text-align:right">Subtotal campaña</th>
       <th style="text-align:right">Fee agencia</th>
       <th style="text-align:right">Subtotal talento</th>
-      <th style="text-align:right">IVA</th>
-      <th style="text-align:right">IVA Ret.</th>
-      <th style="text-align:right">ISR Ret.</th>
       <th style="text-align:right">Total talento</th>
       <th style="text-align:right">Cobrado</th>
       <th style="text-align:right">Por cobrar</th>
@@ -1796,9 +1792,6 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
       <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
       <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
       <td style="text-align:right;color:var(--green);font-weight:500">${fmt(c.sub_t)}</td>
-      <td style="text-align:right;font-size:12px">${fmt(c.iva)}</td>
-      <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.iva_ret)}</td>
-      <td style="text-align:right;font-size:12px;color:var(--gray-500)">− ${fmt(c.isr)}</td>
       <td style="text-align:right;font-weight:600">${fmt(c.total_t)}</td>
       <td style="text-align:right;color:var(--green);font-size:12px">${c.cobrado_t>0?fmt(c.cobrado_t):"—"}</td>
       <td style="text-align:right;color:var(--amber);font-weight:500">${fmt(c.por_cobrar_t)}</td>
@@ -1810,9 +1803,6 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
         <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(sub)}</td>
         <td style="text-align:right;color:var(--red);font-weight:700;padding-top:14px">− ${fmt(feeAmt)}</td>
         <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${fmt(subT)}</td>
-        <td style="text-align:right;font-weight:600;padding-top:14px">${fmt(ivaAmt)}</td>
-        <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(ivaRet)}</td>
-        <td style="text-align:right;color:var(--gray-500);font-weight:600;padding-top:14px">− ${fmt(isrRet)}</td>
         <td style="text-align:right;font-weight:700;padding-top:14px">${fmt(totalT)}</td>
         <td style="text-align:right;color:var(--green);font-weight:700;padding-top:14px">${cobradoT>0?fmt(cobradoT):"—"}</td>
         <td style="text-align:right;color:var(--amber);font-weight:700;padding-top:14px">${fmt(porCobT)}</td>
