@@ -510,7 +510,7 @@
     <!-- ── CAMPAÑAS ── -->
     <div class="dash-section active" id="sec-campanas">
       <div class="kpi-grid" id="kpi-grid"></div>
-      <div id="ratios-bar" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
+      <div id="ratios-bar" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px"></div>
       <div class="status-bar" id="status-bar"></div>
       <div class="por-cobrar-alert" id="alert-cobrar" style="display:none">
         <span style="font-size:18px">⚠</span>
@@ -1476,11 +1476,9 @@ function renderCampanas(user, camps) {
   `;
 
   const marcasSet   = [...new Set(camps.map(c => c.marca))];
-  const agenciasSet = [...new Set(camps.map(c => c.agencia))];
   const ratioCards = [
     { l:"Campañas", v: camps.length,       s: "en total",   tipo:"campanas" },
     { l:"Marcas",   v: marcasSet.length,   s: marcasSet.join(", ") || "—", tipo:"marcas" },
-    { l:"Agencias", v: agenciasSet.length, s: agenciasSet.join(", ") || "—", tipo:"agencias" },
   ];
   document.getElementById("ratios-bar").innerHTML = ratioCards.map(r => `
     <div onclick="showDetailModal('${r.tipo}',currentUser)"
@@ -1755,7 +1753,7 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
             <div>
               <div style="font-weight:600;font-size:14px;margin-bottom:2px">${c.campana}</div>
-              <div style="font-size:11px;color:var(--gray-500)">${c.agencia} · ${c.marca}</div>
+              <div style="font-size:11px;color:var(--gray-500)">${c.marca}</div>
               <div style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio} → ${c.fecha_fin}</div>
             </div>
             <span style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bg};color:${color};white-space:nowrap">${c.status}</span>
@@ -1820,7 +1818,7 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
       <th>Status</th>
     </tr></thead>
     <tbody>${camps.map(c=>`<tr>
-      <td><div class="camp-name">${c.campana}</div><div class="camp-marca">${c.agencia} · ${c.marca}</div></td>
+      <td><div class="camp-name">${c.campana}</div><div class="camp-marca">${c.marca}</div></td>
       <td style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio}<br>→ ${c.fecha_fin}</td>
       <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
       <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
@@ -1868,11 +1866,10 @@ function renderKpis(user, camps) {
       <div class="kpi-card" style="border-left:3px solid var(--amber);cursor:pointer;transition:box-shadow 0.15s" onclick="showCobrarModal(currentUser)" onmouseenter="this.style.boxShadow='0 4px 16px rgba(217,119,6,0.2)'" onmouseleave="this.style.boxShadow=''"><div class="kpi-label">Por cobrar talento</div><div class="kpi-val" style="color:var(--amber)">${fmtK(porCobT)}</div><div class="kpi-sub">Pendiente · <span style="color:var(--amber);text-decoration:underline">ver detalle →</span></div></div>
     </div>
     <!-- Ratios -->
-    <div style="display:grid;grid-template-columns:${rGrid(3)};gap:10px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:${rGrid(2)};gap:10px;margin-bottom:20px">
       ${[
         ["Campañas", camps.length, "activas 2026"],
         ["Marcas",   [...new Set(camps.map(c=>c.marca))].length,   [...new Set(camps.map(c=>c.marca))].join(", ")||"—"],
-        ["Agencias", [...new Set(camps.map(c=>c.agencia))].length, [...new Set(camps.map(c=>c.agencia))].join(", ")||"—"],
       ].map(([l,v,s])=>`<div class="panel" style="text-align:center;padding:16px;margin-bottom:0"><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-500);margin-bottom:6px">${l}</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px">${v}</div><div style="font-size:11px;color:var(--gray-500);margin-top:4px">${s}</div></div>`).join("")}
     </div>
 
@@ -2216,7 +2213,6 @@ function renderVentasCampanas(user, period) {
   const cobradoT  = camps.reduce((a,c) => a + c.cobrado_t,   0);
   const porCobT   = camps.reduce((a,c) => a + c.por_cobrar_t,0);
   const marcas    = [...new Set(camps.map(c => c.marca))];
-  const agencias  = [...new Set(camps.map(c => c.agencia))];
   const cobPct    = totalT > 0 ? ((cobradoT / totalT) * 100).toFixed(0) : 0;
 
   if (allCamps.length === 0) {
@@ -2255,11 +2251,10 @@ function renderVentasCampanas(user, period) {
     </div>
 
     <!-- Ratios row -->
-    <div style="display:grid;grid-template-columns:${rGrid(4)};gap:8px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:${rGrid(3)};gap:8px;margin-bottom:16px">
       ${[
         { l:"Campañas",      v: camps.length,  s:"en el período" },
         { l:"Marcas",        v: marcas.length, s: marcas.join(", ") },
-        { l:"Agencias",      v: agencias.length, s: agencias.join(", ") },
         { l:"Total talento", v: fmtK(totalT),  s:"después de retenciones" },
       ].map(r => `
         <div style="background:var(--bg-surface);border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px">
@@ -2306,7 +2301,7 @@ function renderVentasCampanas(user, period) {
         <thead>
           <tr>
             <th>Campaña</th>
-            <th>Agencia · Marca</th>
+            <th>Marca</th>
             <th>Vigencia</th>
             <th style="text-align:right">Subtotal campaña</th>
             <th style="text-align:right">Fee agencia</th>
@@ -2321,7 +2316,7 @@ function renderVentasCampanas(user, period) {
         <tbody>
           ${campsForTable.map(c => `<tr>
             <td><div class="camp-name">${c.campana}</div><div style="font-size:10px;color:var(--gray-500)">${c.id}</div></td>
-            <td style="font-size:12px;color:var(--gray-500)">${c.agencia}<br><span style="color:var(--text-primary);font-weight:500">${c.marca}</span></td>
+            <td style="font-size:12px"><span style="color:var(--text-primary);font-weight:500">${c.marca}</span></td>
             <td style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio}<br>→ ${c.fecha_fin}</td>
             <td style="text-align:right;font-weight:500">${fmt(c.subtotal)}</td>
             <td style="text-align:right;color:var(--red);font-size:12px">− ${fmt(c.fee)}</td>
@@ -2438,7 +2433,7 @@ function showCobrarModal(user) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
           <div>
             <div style="font-size:14px;font-weight:600">${c.campana}</div>
-            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.id} · ${c.agencia} · ${c.marca}</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.id} · ${c.marca}</div>
             <div style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio} → ${c.fecha_fin}</div>
           </div>
           <span style="background:#FEF3C7;color:#D97706;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap">${c.status}</span>
@@ -2548,7 +2543,7 @@ function showKpiModal(tipo, user) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
             <div style="font-size:14px;font-weight:600">${c.campana}</div>
-            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.id} · ${c.agencia} · ${c.marca}</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.id} · ${c.marca}</div>
             <div style="font-size:11px;color:var(--gray-500)">${c.fecha_inicio} → ${c.fecha_fin}</div>
           </div>
           <div style="text-align:right">
@@ -2589,13 +2584,6 @@ function showDetailModal(tipo, user) {
       camps: allCamps,
       tag: c => `<span style="background:#EDE9FE;color:#7C3AED;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500">${c.marca}</span>`,
     },
-    agencias: {
-      title: "Campañas por agencia",
-      subtitle: [...new Set(allCamps.map(c=>c.agencia))].join(", "),
-      color: "#1D6FB8",
-      camps: allCamps,
-      tag: c => `<span style="background:#EFF6FF;color:#1D6FB8;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500">${c.agencia}</span>`,
-    },
     "en proceso": {
       title: "En proceso",
       subtitle: "Campañas actualmente en curso",
@@ -2635,7 +2623,7 @@ function showDetailModal(tipo, user) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
           <div>
             <div style="font-size:14px;font-weight:600;margin-bottom:3px">${c.campana}</div>
-            <div style="font-size:11px;color:var(--gray-500)">${c.id} · ${c.agencia} · ${c.marca}</div>
+            <div style="font-size:11px;color:var(--gray-500)">${c.id} · ${c.marca}</div>
             <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${c.fecha_inicio} → ${c.fecha_fin}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;margin-left:12px">
