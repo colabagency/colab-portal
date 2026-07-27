@@ -183,6 +183,21 @@
   .fee-row-val.green { color: #4ADE80; }
   .fee-row-val.red { color: #F87171; }
   .campaign-table { width: 100%; border-collapse: collapse; table-layout: auto; }
+
+  /* Contenedor de scroll horizontal universal para TODAS las tablas.
+     Funciona en cualquier tamaño de pantalla. */
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .table-scroll table { min-width: max-content; }
+  /* Scrollbar sutil */
+  .table-scroll::-webkit-scrollbar { height: 8px; }
+  .table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 8px; }
+  .table-scroll::-webkit-scrollbar-thumb:hover { background: var(--gray-500); }
   .campaign-table th { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-500); text-align: left; padding: 0 8px 10px 0; border-bottom: 1px solid var(--gray-100); white-space: nowrap; }
   .campaign-table td { font-size: 13px; padding: 12px 8px 12px 0; border-bottom: 1px solid var(--gray-100); vertical-align: top; white-space: nowrap; }
   .campaign-table th:last-child, .campaign-table td:last-child { padding-right: 0; }
@@ -322,9 +337,10 @@
     .perf-platform-tabs { flex-wrap: wrap; gap: 6px; }
     .ptab { font-size: 11px; padding: 6px 12px; }
 
-    /* Tables → horizontal scroll */
-    .campaign-table { font-size: 11px; min-width: 500px; }
+    /* Tables → texto más compacto en móvil (el scroll lo maneja .table-scroll) */
+    .campaign-table { font-size: 11px; }
     .campaign-table th, .campaign-table td { padding: 8px 5px; white-space: nowrap; }
+    .history-table { font-size: 11px; }
 
     /* Fee breakdown */
     .fee-breakdown { padding: 20px 16px; }
@@ -362,9 +378,6 @@
     .section-nav::-webkit-scrollbar { display: none; }
     .snav-item { flex-shrink: 0; }
 
-    /* Admin table responsive */
-    .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .admin-table-wrap table { min-width: 580px; font-size: 12px; }
 
     /* repeat(3,1fr) → 1 col en móvil */
     div[style*="repeat(3,1fr)"] { grid-template-columns: 1fr !important; }
@@ -1696,7 +1709,7 @@ function renderAdminDashboard() {
     <!-- Resumen por talento -->
     <div class="panel" style="margin-bottom:20px">
       <div class="panel-title">Resumen por talento</div>
-      <div class="admin-table-wrap" style="overflow-x:auto">
+      <div class="table-scroll">
       <table class="campaign-table">
         <thead><tr>
           <th>Talento</th>
@@ -1746,7 +1759,7 @@ function renderAdminDashboard() {
     <!-- Todas las campañas -->
     <div class="panel">
       <div class="panel-title">Todas las campañas <span style="font-size:11px;color:var(--text-primary);letter-spacing:0;text-transform:none;font-weight:500">${allCamps.length} total</span></div>
-      <div class="admin-table-wrap" style="overflow-x:auto">
+      <div class="table-scroll">
       <table class="campaign-table">
         <thead><tr>
           <th>Campaña</th>
@@ -1856,7 +1869,7 @@ function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, total
   }
 
   // ── DESKTOP: full table ──
-  return `<div style="overflow-x:auto"><table class="campaign-table">
+  return `<div class="table-scroll"><table class="campaign-table">
     <thead><tr>
       <th>Campaña</th><th>Vigencia</th>
       <th style="text-align:right">Subtotal campaña</th>
@@ -2225,7 +2238,7 @@ function renderPerformance(user, plat) {
 
     <div class="panel">
       <div class="panel-title">Historial <span style="font-size:11px;color:var(--gray-500);letter-spacing:0;text-transform:none;font-weight:400">${data.length} registros${currentPeriod!=="all"?" · últimos "+currentPeriod+" meses":""}</span></div>
-      <table class="history-table">
+      <div class="table-scroll"><table class="history-table">
         <thead><tr>
           <th>Mes</th>
           <th>Seguidores</th>
@@ -2249,7 +2262,7 @@ function renderPerformance(user, plat) {
             </tr>`;
           }).join("")}
         </tbody>
-      </table>
+      </table></div>
     </div>
   `;
 
@@ -2436,7 +2449,7 @@ function renderVentasCampanas(user, period) {
         Detalle de campañas
         <span style="font-size:11px;color:var(--text-primary);letter-spacing:0;text-transform:none;font-weight:500">${campsForTable.length} total</span>
       </div>
-      <div class="admin-table-wrap" style="overflow-x:auto">
+      <div class="table-scroll">
       <table class="campaign-table">
         <thead>
           <tr>
