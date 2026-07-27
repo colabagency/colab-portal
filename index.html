@@ -174,7 +174,7 @@
   .camp-status { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; }
   .status-active { background: var(--green-light); color: var(--green); }
   .status-pending { background: var(--amber-light); color: var(--amber); }
-  .fee-breakdown { background: var(--black); border-radius: 12px; padding: 24px; color: white; margin-bottom: 16px; position: relative; overflow: hidden; max-height: 700px; }
+  .fee-breakdown { background: var(--black); border-radius: 12px; padding: 24px; color: white; margin-bottom: 16px; position: relative; overflow: hidden; }
   .fee-breakdown::after { content: 'FEE'; position: absolute; font-family: 'Bebas Neue', sans-serif; font-size: 160px; color: rgba(232,56,13,0.1); right: -10px; bottom: -20px; line-height: 1; pointer-events: none; }
   .fee-breakdown .panel-title { color: rgba(255,255,255,0.4); }
   .fee-main { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 1px; color: var(--red); line-height: 1; margin-bottom: 8px; }
@@ -537,19 +537,15 @@
         <span style="font-size:18px">⚠</span>
         <span id="alert-cobrar-text"></span>
       </div>
-      <div class="two-col">
-        <div class="panel">
-          <div class="panel-title"><span>Mis campañas</span><span id="camp-count" style="color:var(--text-primary);font-size:13px;letter-spacing:0;text-transform:none;font-weight:500"></span></div>
-          <div id="camp-table"></div>
-        </div>
-        <div>
-          <div class="fee-breakdown">
-            <div class="panel-title">Resumen financiero</div>
-            <div class="fee-main" id="fee-total">$0</div>
-            <div class="fee-desc" id="fee-desc"></div>
-            <div id="fee-rows"></div>
-          </div>
-        </div>
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-title"><span>Mis campañas</span><span id="camp-count" style="color:var(--text-primary);font-size:13px;letter-spacing:0;text-transform:none;font-weight:500"></span></div>
+        <div id="camp-table"></div>
+      </div>
+      <div class="fee-breakdown">
+        <div class="panel-title">Resumen financiero</div>
+        <div class="fee-main" id="fee-total">$0</div>
+        <div class="fee-desc" id="fee-desc"></div>
+        <div id="fee-rows"></div>
       </div>
     </div>
 
