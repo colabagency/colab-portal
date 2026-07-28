@@ -297,6 +297,7 @@
 
   /* ── MOBILE (≤640px) ── */
   @media (max-width: 640px) {
+    .adm-charts-2, .adm-charts-3 { grid-template-columns: 1fr !important; }
     /* Login */
     #login-page { flex-direction: column; }
     .login-left { display: none; }
@@ -1645,6 +1646,31 @@ function renderAdminDashboard() {
     };
   }).sort((a,b) => b.sub - a.sub);
 
+  // ── Datos para gráficas ──
+  const MONTH_ORDER = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  // 1 & 6) Ingresos por mes (subtotal, fee agencia, neto talento)
+  const monthMap = {};
+  allCamps.forEach(c => {
+    const mes = (c.fecha_inicio||"").replace(/^\d+ /,"");
+    if (!mes) return;
+    if (!monthMap[mes]) monthMap[mes] = { mes, sub:0, fee:0, total_t:0 };
+    monthMap[mes].sub     += c.subtotal;
+    monthMap[mes].fee     += c.fee;
+    monthMap[mes].total_t += c.total_t;
+  });
+  const chartMonths = Object.values(monthMap).sort((a,b)=>{
+    const [ma,ya]=a.mes.split(" "), [mb,yb]=b.mes.split(" ");
+    return (parseInt(ya)*12+MONTH_ORDER.indexOf(ma)) - (parseInt(yb)*12+MONTH_ORDER.indexOf(mb));
+  });
+
+  // 2) Ranking de talentos (top por subtotal, ya viene ordenado)
+  const rankTalents = talentSummary.filter(t=>t.sub>0);
+
+  // 3) Distribución por marca
+  const marcaMap = {};
+  allCamps.forEach(c => { marcaMap[c.marca] = (marcaMap[c.marca]||0) + c.subtotal; });
+  const marcaData = Object.entries(marcaMap).sort((a,b)=>b[1]-a[1]);
+
   el.innerHTML = `
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
@@ -1679,6 +1705,43 @@ function renderAdminDashboard() {
         <div class="kpi-label">Por cobrar total</div>
         <div class="kpi-val" style="color:var(--amber)">${fmtK(totalPorCob)}</div>
         <div class="kpi-sub">${totalCobT>0?fmtK(totalCobT)+" cobrado":"Sin cobros aún"}</div>
+      </div>
+    </div>
+
+    <!-- ══════ GRÁFICAS ══════ -->
+    <div class="panel-title" style="margin-bottom:12px">Análisis visual</div>
+
+    <!-- Fila 1: Ingresos por mes (ancho completo) -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="panel-title">Ingresos por mes</div>
+      <div style="height:260px"><canvas id="adm-ingresos"></canvas></div>
+    </div>
+
+    <!-- Fila 2: Ranking talentos + Distribución marcas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" class="adm-charts-2">
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Ranking de talentos por ingresos</div>
+        <div style="height:${Math.max(200, rankTalents.length*38)}px"><canvas id="adm-ranking"></canvas></div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Distribución por marca</div>
+        <div style="height:280px"><canvas id="adm-marcas"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Fila 3: Cobros + Status + Fee vs Neto -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px" class="adm-charts-3">
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Estado de cobros</div>
+        <div style="height:220px"><canvas id="adm-cobros"></canvas></div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Status de campañas</div>
+        <div style="height:220px"><canvas id="adm-status"></canvas></div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-title">Fee agencia vs neto talento</div>
+        <div style="height:220px"><canvas id="adm-reparto"></canvas></div>
       </div>
     </div>
 
@@ -1823,6 +1886,132 @@ function renderAdminDashboard() {
       </div>
     </div>
   `;
+
+  // ── Dibujar gráficas ──
+  const css = getComputedStyle(document.documentElement);
+  const C = {
+    red:    (css.getPropertyValue("--red")||"#E8380D").trim(),
+    green:  (css.getPropertyValue("--green")||"#1A8C5B").trim(),
+    amber:  (css.getPropertyValue("--amber")||"#D97706").trim(),
+    blue:   (css.getPropertyValue("--blue")||"#1D6FB8").trim(),
+    ink:    (css.getPropertyValue("--text-primary")||"#1A1613").trim(),
+    gray:   (css.getPropertyValue("--gray-500")||"#8A857D").trim(),
+    grid:   (css.getPropertyValue("--gray-100")||"#F0EDE8").trim(),
+  };
+  const marcaPalette = ["#E8380D","#1A8C5B","#D97706","#1D6FB8","#7C3AED","#DB2777","#0891B2","#65A30D","#9333EA","#C2410C"];
+  const fmtMXN = (v)=>"$"+Math.round(v).toLocaleString("es-MX");
+
+  ["adm-ingresos","adm-ranking","adm-marcas","adm-cobros","adm-status","adm-reparto"].forEach(id=>{
+    if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+  });
+
+  const noData = { display:false };
+  const baseOpts = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ labels:{ color:C.gray, font:{size:11}, boxWidth:12, padding:10 } } },
+  };
+
+  // 1) Ingresos por mes (barras: subtotal, fee, neto)
+  if (chartMonths.length) {
+    chartInstances["adm-ingresos"] = new Chart(document.getElementById("adm-ingresos"), {
+      type:"bar",
+      data:{
+        labels: chartMonths.map(m=>m.mes),
+        datasets:[
+          { label:"Subtotal campaña", data:chartMonths.map(m=>m.sub),     backgroundColor:C.ink,   borderRadius:4 },
+          { label:"Fee agencia",      data:chartMonths.map(m=>m.fee),     backgroundColor:C.red,   borderRadius:4 },
+          { label:"Neto talento",     data:chartMonths.map(m=>m.total_t), backgroundColor:C.green, borderRadius:4 },
+        ]
+      },
+      options:{ ...baseOpts,
+        scales:{
+          x:{ ticks:{color:C.gray,font:{size:11}}, grid:{display:false} },
+          y:{ ticks:{color:C.gray,font:{size:10},callback:v=>"$"+(v/1000)+"K"}, grid:{color:C.grid} }
+        },
+        plugins:{ ...baseOpts.plugins, tooltip:{ callbacks:{ label:(ctx)=>ctx.dataset.label+": "+fmtMXN(ctx.parsed.y) } } }
+      }
+    });
+  }
+
+  // 2) Ranking de talentos (barras horizontales)
+  if (rankTalents.length) {
+    chartInstances["adm-ranking"] = new Chart(document.getElementById("adm-ranking"), {
+      type:"bar",
+      data:{
+        labels: rankTalents.map(t=>t.apodo),
+        datasets:[{ label:"Subtotal", data:rankTalents.map(t=>t.sub), backgroundColor:C.red, borderRadius:4 }]
+      },
+      options:{ ...baseOpts, indexAxis:"y",
+        plugins:{ legend:noData, tooltip:{ callbacks:{ label:(ctx)=>fmtMXN(ctx.parsed.x) } } },
+        scales:{
+          x:{ ticks:{color:C.gray,font:{size:10},callback:v=>"$"+(v/1000)+"K"}, grid:{color:C.grid} },
+          y:{ ticks:{color:C.ink,font:{size:12,weight:"500"}}, grid:{display:false} }
+        }
+      }
+    });
+  }
+
+  // 3) Distribución por marca (dona)
+  if (marcaData.length) {
+    chartInstances["adm-marcas"] = new Chart(document.getElementById("adm-marcas"), {
+      type:"doughnut",
+      data:{
+        labels: marcaData.map(m=>m[0]),
+        datasets:[{ data:marcaData.map(m=>m[1]), backgroundColor:marcaPalette, borderWidth:2, borderColor:css.getPropertyValue("--bg-surface").trim()||"#fff" }]
+      },
+      options:{ ...baseOpts, cutout:"58%",
+        plugins:{ legend:{position:"bottom",labels:{color:C.gray,font:{size:10},boxWidth:10,padding:8}},
+          tooltip:{ callbacks:{ label:(ctx)=>ctx.label+": "+fmtMXN(ctx.parsed) } } }
+      }
+    });
+  }
+
+  // 4) Estado de cobros (dona)
+  chartInstances["adm-cobros"] = new Chart(document.getElementById("adm-cobros"), {
+    type:"doughnut",
+    data:{
+      labels:["Cobrado","Por cobrar"],
+      datasets:[{ data:[totalCobT, totalPorCob], backgroundColor:[C.green, C.amber], borderWidth:2, borderColor:css.getPropertyValue("--bg-surface").trim()||"#fff" }]
+    },
+    options:{ ...baseOpts, cutout:"62%",
+      plugins:{ legend:{position:"bottom",labels:{color:C.gray,font:{size:11},boxWidth:12,padding:10}},
+        tooltip:{ callbacks:{ label:(ctx)=>ctx.label+": "+fmtMXN(ctx.parsed) } } }
+    }
+  });
+
+  // 5) Status de campañas (dona)
+  chartInstances["adm-status"] = new Chart(document.getElementById("adm-status"), {
+    type:"doughnut",
+    data:{
+      labels:["En proceso","Pendientes","Finalizadas"],
+      datasets:[{ data:[enProceso, pendientes, finalizadas], backgroundColor:[C.blue, C.amber, C.green], borderWidth:2, borderColor:css.getPropertyValue("--bg-surface").trim()||"#fff" }]
+    },
+    options:{ ...baseOpts, cutout:"62%",
+      plugins:{ legend:{position:"bottom",labels:{color:C.gray,font:{size:11},boxWidth:12,padding:10}} }
+    }
+  });
+
+  // 6) Fee agencia vs neto talento por mes (barras apiladas)
+  if (chartMonths.length) {
+    chartInstances["adm-reparto"] = new Chart(document.getElementById("adm-reparto"), {
+      type:"bar",
+      data:{
+        labels: chartMonths.map(m=>m.mes),
+        datasets:[
+          { label:"Fee agencia",  data:chartMonths.map(m=>m.fee),     backgroundColor:C.red,   borderRadius:3 },
+          { label:"Neto talento", data:chartMonths.map(m=>m.total_t), backgroundColor:C.green, borderRadius:3 },
+        ]
+      },
+      options:{ ...baseOpts,
+        plugins:{ legend:{position:"bottom",labels:{color:C.gray,font:{size:10},boxWidth:10,padding:8}},
+          tooltip:{ callbacks:{ label:(ctx)=>ctx.dataset.label+": "+fmtMXN(ctx.parsed.y) } } },
+        scales:{
+          x:{ stacked:true, ticks:{color:C.gray,font:{size:10}}, grid:{display:false} },
+          y:{ stacked:true, ticks:{color:C.gray,font:{size:10},callback:v=>"$"+(v/1000)+"K"}, grid:{color:C.grid} }
+        }
+      }
+    });
+  }
 }
 
 function renderCampTable(camps, sub, feeAmt, subT, ivaAmt, ivaRet, isrRet, totalT, cobradoT, porCobT) {
