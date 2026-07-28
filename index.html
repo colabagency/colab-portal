@@ -560,9 +560,9 @@
     <!-- ── PERFORMANCE ── -->
     <div class="dash-section" id="sec-performance">
       <div class="perf-platform-tabs">
-        <div class="ptab active" onclick="switchPlatform('ig',this)"><span class="ptab-ic" data-plat="ig"></span> Instagram</div>
+        <div class="ptab ventas active" onclick="switchPlatform('ventas',this)">💰 Ventas & Campañas</div>
+        <div class="ptab" onclick="switchPlatform('ig',this)"><span class="ptab-ic" data-plat="ig"></span> Instagram</div>
         <div class="ptab tiktok" onclick="switchPlatform('tt',this)"><span class="ptab-ic" data-plat="tt"></span> TikTok</div>
-        <div class="ptab ventas" onclick="switchPlatform('ventas',this)">💰 Ventas & Campañas</div>
       </div>
 
       <div id="period-bar-wrap">
@@ -1008,7 +1008,7 @@ function toggleTheme() {
 
 let currentUser = null;
 let currentYear = new Date().getFullYear();
-let currentPlatform = "ig";
+let currentPlatform = "ventas";
 let currentPeriod = "all";
 let chartInstances = {};
 
@@ -1296,7 +1296,7 @@ function adminSwitchTo(email) {
   }
   banner.innerHTML = `<span>👁 MODO ADMIN</span><span style="opacity:0.4">|</span><span>Viendo: <strong>${user.nombre}</strong> · ${user.clave}</span><button onclick="adminGoHome()" style="background:var(--red);border:none;color:white;font-size:10px;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:8px">← Admin</button>`;
   currentUser = user;
-  currentPlatform = "ig";
+  currentPlatform = "ventas";
   // Restore talent tabs
   document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "block");
   renderAll(user);
@@ -1320,7 +1320,7 @@ async function doLogin() {
     err.textContent = "";
     isAdmin = true;
     currentUser = admin;
-    currentPlatform = "ig";
+    currentPlatform = "ventas";
     // Show admin arrow and nav tab
     const arrow = document.getElementById("admin-arrow");
     if (arrow) arrow.style.display = "inline";
@@ -1383,7 +1383,7 @@ async function doLogin() {
 
   persistRemember(email, pw);
   currentUser = user;
-  currentPlatform = "ig";
+  currentPlatform = "ventas";
   renderAll(user);
   document.getElementById("login-page").style.display = "none";
   document.getElementById("dash-page").style.display = "block";
