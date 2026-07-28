@@ -1465,7 +1465,26 @@ function setPeriod(period, el) {
 function filterByPeriod(data, period) {
   if (period === "all" || data.length === 0) return data;
   const n = parseInt(period);
-  return data.slice(-n);
+  const MONTH_ORDER = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  // Índice absoluto (año*12 + mes) de "Mmm AAAA"
+  const idxOf = (mesStr) => {
+    const parts = String(mesStr).trim().split(" ");
+    const m = MONTH_ORDER.indexOf(parts[0]);
+    const y = parseInt(parts[1]);
+    if (m < 0 || isNaN(y)) return null;
+    return y * 12 + m;
+  };
+  // Mes actual como referencia
+  const now = new Date();
+  const nowIdx = now.getFullYear() * 12 + now.getMonth();
+  // Ventana: últimos n meses contando el actual (n=3 → actual y los 2 previos)
+  const minIdx = nowIdx - (n - 1);
+  const filtered = data.filter(d => {
+    const i = idxOf(d.mes || d.fecha);
+    return i === null ? false : (i >= minIdx && i <= nowIdx);
+  });
+  // Si el filtro deja todo fuera (datos viejos), caer a los últimos n disponibles
+  return filtered.length > 0 ? filtered : data.slice(-n);
 }
 
 /* ════════════════════════════════════════
