@@ -200,7 +200,12 @@
     overscroll-behavior-x: contain;
     touch-action: pan-x;
   }
-  .table-scroll table { min-width: max-content; width: auto; }
+  .table-scroll table { min-width: 100%; width: 100%; }
+  /* En pantallas chicas, forzar ancho mínimo para que las columnas no se aplasten y aparezca scroll */
+  @media (max-width: 760px) {
+    .table-scroll table.campaign-table { min-width: 680px; }
+    .table-scroll table.history-table { min-width: 560px; }
+  }
   /* Scrollbar sutil */
   .table-scroll::-webkit-scrollbar { height: 8px; }
   .table-scroll::-webkit-scrollbar-track { background: transparent; }
