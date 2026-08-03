@@ -1210,6 +1210,7 @@ function doForgot() {
    ADMIN MODE
 ════════════════════════════════════════ */
 let isAdmin = false;
+let managerFilter = null; // null = ve todo (admin); string = nombre del manager, filtra sus talentos
 
 function toggleAdminMenu() {
   if (!isAdmin) return;
@@ -1228,12 +1229,13 @@ function toggleAdminMenu() {
       onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${isOnAdmin?"var(--off-white)":"none'"}">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">⚡</div>
       <div>
-        <div style="font-weight:600">Admin Dashboard</div>
-        <div style="font-size:10px;color:var(--gray-500)">Vista general CO/LAB</div>
+        <div style="font-weight:600">${managerFilter ? "Mis Talentos" : "Admin Dashboard"}</div>
+        <div style="font-size:10px;color:var(--gray-500)">${managerFilter ? "Panel de " + managerFilter : "Vista general CO/LAB"}</div>
       </div>
       ${isOnAdmin?'<span style="margin-left:auto;color:var(--green);font-size:12px">✓</span>':""}
     </button>`;
-    list.innerHTML = adminOption + Object.values(TALENTS).filter(t => t.clave !== "ADMIN").map(t => `
+    list.innerHTML = adminOption + Object.values(TALENTS).filter(t => t.clave !== "ADMIN" &&
+      (!managerFilter || norm(t.manager) === norm(managerFilter))).map(t => `
       <button onclick="adminSwitchTo('${t.email}')"
         style="width:100%;padding:10px 16px;background:${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:10px"
         onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none'"}">
@@ -1288,6 +1290,8 @@ function adminGoHome() {
 function adminSwitchTo(email) {
   const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email.toLowerCase());
   if (!user) return;
+  // Seguridad: un Manager solo puede ver a los talentos que tiene asignados
+  if (managerFilter && norm(user.manager) !== norm(managerFilter)) return;
   document.getElementById("admin-menu").style.display = "none";
   const arrow = document.getElementById("admin-arrow");
   if (arrow) arrow.style.transform = "rotate(0deg)";
@@ -1319,13 +1323,16 @@ async function doLogin() {
   // ── Admin hardcodeado — siempre funciona ──
   const ADMINS = [
     { clave:"ADMIN", nombre:"RICARDO SALIDO", apodo:"Ricardo", email:"ricardo.salido@grupocfa.com", pw:"Savi059_",   manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
-    { clave:"ADMIN", nombre:"MARIANA LLANEZA",  apodo:"Mariana", email:"hello@colabagency.mx",        pw:"Colab2026*", manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" }
+    { clave:"ADMIN", nombre:"MARIANA LLANEZA",  apodo:"Mariana", email:"hello@colabagency.mx",        pw:"Colab2026*", manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
+    // Manager de talento — ve el panel admin pero SOLO de sus talentos asignados (columna "Manager" del Sheet)
+    { clave:"ADMIN", nombre:"PAULA TOMMASI", apodo:"Paula", email:"paula.tommasi@colabagency.mx", pw:"Paula2026*", manager:"CO/LAB Agency", fee_pct:0, categoria:"Manager", instagram:"", tiktok:"", contrato:"—", antiguedad:"—", managerOf:"Paula Tommasi" }
   ];
   const admin = ADMINS.find(a => a.email.toLowerCase() === email && a.pw === pw);
   if (admin) {
     err.textContent = "";
     isAdmin = true;
     currentUser = admin;
+    managerFilter = admin.managerOf || null; // si es Manager, filtra; si no, ve todo
     currentPlatform = "ventas";
     // Show admin arrow and nav tab
     const arrow = document.getElementById("admin-arrow");
@@ -1334,10 +1341,11 @@ async function doLogin() {
     if (logoutBtn) logoutBtn.style.display = "none";
     const navAdmin = document.getElementById("nav-admin");
     if (navAdmin) navAdmin.style.display = "block";
-    // Admin goes directly to admin dashboard
-    document.getElementById("top-av").textContent = "RS";
-    document.getElementById("top-name").textContent = "Ricardo";
-    document.getElementById("dash-name").textContent = "Ricardo";
+    // Header con el nombre real del usuario
+    const initials = admin.apodo ? admin.apodo.slice(0,2).toUpperCase() : "CL";
+    document.getElementById("top-av").textContent = initials;
+    document.getElementById("top-name").textContent = admin.apodo;
+    document.getElementById("dash-name").textContent = admin.apodo;
     document.getElementById("footer-date").textContent =
       "Actualizado: " + new Date().toLocaleDateString("es-MX", {day:"numeric",month:"long",year:"numeric"});
     document.getElementById("year-display").textContent = new Date().getFullYear();
@@ -1398,6 +1406,7 @@ async function doLogin() {
 
 function logout() {
   isAdmin = false;
+  managerFilter = null;
   document.getElementById("login-page").style.display = "flex";
   document.getElementById("dash-page").style.display = "none";
   document.getElementById("email-input").value = "";
@@ -1621,8 +1630,12 @@ function renderCampanas(user, camps) {
 ════════════════════════════════════════ */
 function renderAdminDashboard() {
   const el = document.getElementById("sec-admin");
-  const allCamps = CAMPAIGNS;
-  const talents  = Object.values(TALENTS).filter(t => t.clave !== "ADMIN");
+  // Si es Manager (no admin total), filtrar solo sus talentos asignados (columna "Manager")
+  const myTalents = Object.values(TALENTS).filter(t => t.clave !== "ADMIN" &&
+    (!managerFilter || norm(t.manager) === norm(managerFilter)));
+  const myClaves = new Set(myTalents.map(t => t.clave));
+  const allCamps = managerFilter ? CAMPAIGNS.filter(c => myClaves.has(c.talento_clave)) : CAMPAIGNS;
+  const talents  = myTalents;
 
   // Global KPIs
   const totalSub    = allCamps.reduce((a,c)=>a+c.subtotal,    0);
@@ -1680,11 +1693,11 @@ function renderAdminDashboard() {
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
       <div>
-        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px">Dashboard CO/LAB</h2>
-        <div style="font-size:12px;color:var(--gray-500);margin-top:2px">Vista general de la agencia · ${new Date().toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"})}</div>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px">${managerFilter ? "Mis Talentos" : "Dashboard CO/LAB"}</h2>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:2px">${managerFilter ? "Manager: " + managerFilter : "Vista general de la agencia"} · ${new Date().toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"})}</div>
       </div>
       <div style="display:flex;gap:8px">
-        <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:8px;padding:6px 14px;font-size:12px;color:var(--green);font-weight:500">${talents.length} talentos activos</div>
+        <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:8px;padding:6px 14px;font-size:12px;color:var(--green);font-weight:500">${talents.length} talento${talents.length!==1?"s":""}</div>
         <div style="background:var(--blue-light);border:1px solid #BFDBFE;border-radius:8px;padding:6px 14px;font-size:12px;color:var(--blue);font-weight:500">${allCamps.length} campañas</div>
       </div>
     </div>
