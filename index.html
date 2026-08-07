@@ -712,6 +712,45 @@ function parseNumber(str) {
   return parseFloat(String(str).replace(/[$,\s]/g, "")) || 0;
 }
 
+/* ── Mapeo de columnas por nombre de encabezado ──────────────────────
+   Normaliza el texto del header (minúsculas, sin acentos ni puntos) para
+   poder ubicar cada dato aunque en el Sheet se muevan o inserten columnas. */
+function normHeader(s) {
+  return String(s == null ? "" : s)
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita acentos y la ~ de la ñ
+    .replace(/[.]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildHeaderMap(headerRow) {
+  const map = {};
+  (headerRow || []).forEach((h, i) => {
+    const k = normHeader(h);
+    if (k && !(k in map)) map[k] = i; // se queda con la primera aparición
+  });
+  return map;
+}
+
+// Lee una celda por nombre de encabezado; si no existe, usa la posición histórica.
+function cell(row, map, headerName, fallbackIdx) {
+  const i = map[headerName] !== undefined ? map[headerName] : fallbackIdx;
+  return row[i];
+}
+function txt(row, map, headerName, fallbackIdx) {
+  return (cell(row, map, headerName, fallbackIdx) || "").trim();
+}
+function num(row, map, headerName, fallbackIdx) {
+  return parseNumber(cell(row, map, headerName, fallbackIdx));
+}
+
+// Columnas que el portal necesita de la hoja "Ventas" (para avisar si faltan).
+const REQUIRED_CAMP_COLS = [
+  "no de campana", "talento", "campana", "status",
+  "subtotal campana", "total talento", "cobrado talento"
+];
+
 function extractHandle(raw) {
   if (!raw) return "";
   const s = String(raw).trim();
@@ -824,31 +863,40 @@ async function loadSheetData() {
 
     // ── Cargar campañas (hoja: Ventas 2026)
     const campRows = await fetchSheetCSV("Ventas");
-    if (campRows.length > 0) campRows.shift(); // remove header row
+    // Los encabezados se leen por NOMBRE, no por posición. Así, si en el Sheet se
+    // inserta, borra o mueve una columna, el portal se sigue ajustando solo.
+    const campHeader = campRows.length > 0 ? campRows.shift() : [];
+    const H = buildHeaderMap(campHeader);
+    const missing = REQUIRED_CAMP_COLS.filter(n => H[n] === undefined);
+    if (missing.length) console.warn("⚠ Columnas no encontradas en 'Ventas':", missing);
     // La hoja "Ventas" tiene una fila vacía tras el header — la omitimos
-    while (campRows.length > 0 && !(campRows[0][3]||"").trim()) campRows.shift();
+    const idIdx = H["no de campana"] !== undefined ? H["no de campana"] : 3;
+    while (campRows.length > 0 && !(campRows[0][idIdx]||"").trim()) campRows.shift();
     CAMPAIGNS = [];
     for (const row of campRows) {
-      const id      = (row[3]||"").trim();
-      const nombre  = (row[4]||"").trim();
-      const clave   = (row[5]||"").trim();
-      const manager = (row[7]||"").trim();
-      const campana = (row[8]||"").trim();
-      const agencia = (row[10]||"").trim();
-      const marca   = (row[11]||"").trim();
-      const fIni    = (row[12]||"").trim();
-      const fFin    = (row[13]||"").trim();
-      const status  = (row[14]||"").trim();
-      const cfdi    = (row[15]||"").trim();
-      const sub     = parseNumber(row[16]);
-      const fee     = parseNumber(row[21]);
-      const sub_t   = parseNumber(row[22]);
-      const iva     = parseNumber(row[23]);
-      const iva_ret = parseNumber(row[24]);
-      const isr     = parseNumber(row[25]);
-      const total_t = parseNumber(row[26]);
-      const cob_t   = parseNumber(row[27]);
-      const por_t   = parseNumber(row[28]);
+      const id      = txt(row, H, "no de campana",   3);
+      const nombre  = txt(row, H, "talento",         4);
+      const clave   = txt(row, H, "clave talento",   5);
+      const manager = txt(row, H, "manager",         7);
+      const campana = txt(row, H, "campana",         8);
+      const agencia = txt(row, H, "agencia",        10);
+      const marca   = txt(row, H, "marca",          11);
+      const fIni    = txt(row, H, "fecha inicio",   12);
+      const fFin    = txt(row, H, "fecha final",    13);
+      const status  = txt(row, H, "status",         14);
+      const cfdi    = txt(row, H, "cfdis emitidos", 15);
+      const sub     = num(row, H, "subtotal campana", 16);
+      const fee     = num(row, H, "fee agencia",      21);
+      const sub_t   = num(row, H, "subtotal talento", 22);
+      const iva     = num(row, H, "iva",              23);
+      const iva_ret = num(row, H, "iva retenido",     24);
+      const isr     = num(row, H, "isr retenido",     25);
+      const total_t = num(row, H, "total talento",    26);
+      const cob_t   = num(row, H, "cobrado talento",  27);
+      // "Por Cobrar Talento" ya no existe como columna: si falta, se calcula.
+      const por_t   = H["por cobrar talento"] !== undefined
+        ? num(row, H, "por cobrar talento", 28)
+        : Math.max(0, total_t - cob_t);
 
       // Si la columna F está vacía, intentar encontrar la clave por nombre
       const claveResuelta = clave || (() => {
@@ -876,7 +924,7 @@ async function loadSheetData() {
     }
 
     hideLoader();
-    console.log(`✅ Sheets cargado: ${Object.keys(TALENTS).length} talentos, ${CAMPAIGNS.length} campañas`);
+    console.log(`✅ Sheets cargado: ${Object.keys(TALENTS).length} talentos, ${CAMPAIGNS.length} campañas (de ${campRows.length} filas leídas en "Ventas")`);
     return true;
   } catch (err) {
     hideLoader();
