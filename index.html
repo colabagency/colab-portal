@@ -799,6 +799,7 @@ async function loadSheetData() {
     SESSION_ME    = r.me || null;
     hideLoader();
     console.log(`✅ Datos cargados (${r.role}): ${Object.keys(TALENTS).length} talentos, ${CAMPAIGNS.length} campañas`);
+    if (r.diag) console.log("🔎 Diagnóstico del backend:", r.diag);
     return true;
   } catch (err) {
     hideLoader();
@@ -1224,6 +1225,18 @@ async function doLogin() {
     const themeBtn = document.getElementById("theme-toggle-btn");
     if (themeBtn) themeBtn.textContent = (document.documentElement.getAttribute("data-theme") === "dark") ? "☀️" : "🌙";
 
+    // Validar ANTES de mostrar el dashboard: si algo falta, el usuario ve
+    // un mensaje claro en el login en vez de una pantalla en blanco.
+    let meTalento = null;
+    if (!isAdmin) {
+      meTalento = Object.values(TALENTS)[0];
+      if (!meTalento) {
+        err.innerHTML = "No encontramos tu ficha de talento.<br><span style='font-size:11px'>Revisa la consola (Cmd+Option+J) para el detalle.</span>";
+        if (btn) { btn.disabled = false; btn.textContent = "ENTRAR"; }
+        return;
+      }
+    }
+
     document.getElementById("login-page").style.display = "none";
     document.getElementById("dash-page").style.display  = "block";
 
@@ -1248,9 +1261,7 @@ async function doLogin() {
       if (yw) yw.style.display = "none";
       renderAdminDashboard();
     } else {
-      const me = Object.values(TALENTS)[0];
-      if (!me) { err.textContent = "Tu usuario no tiene un talento asociado. Contacta a tu manager."; if (btn) { btn.disabled = false; btn.textContent = "ENTRAR"; } return; }
-      currentUser = me;
+      currentUser = meTalento;
       document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "block");
       renderAll(currentUser);
     }
