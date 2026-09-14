@@ -1,9 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  "name": "colab-portal",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
 }
