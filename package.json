@@ -1,0 +1,6 @@
+{
+  "name": "colab-portal",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" }
+}
