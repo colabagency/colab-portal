@@ -1,8 +1,6 @@
 {
-  "name": "colab-portal",
-  "private": true,
-  "type": "module",
-  "engines": {
-    "node": ">=18"
-  }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }
