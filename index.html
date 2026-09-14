@@ -620,10 +620,27 @@ window.addEventListener("resize", () => {
 /* ════════════════════════════════════════
    CONFIG — Google Sheets en tiempo real
 ════════════════════════════════════════ */
-const SHEET_ID = "17NdtOJX1CRdtuDr592ekTQbyBT_bfivTEOhgdSUgOxU";
-const API_KEY  = "AIzaSyCLshttTdmHcknVI2Zh0tKzRnVXJuZpMvk";
-const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
-const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbwWNxTz1RIB3YlqwuFbFQzcUmQE0J4kRJ9y2MgMvSoJSr3GwLr14aHAlzw3oUPZ_y7Uyw/exec";
+const API_BASE = "/api";
+
+/* Sesión: token firmado que devuelve /api/auth. El navegador ya no
+   conoce el ID del Sheet ni ninguna credencial de Google. */
+function getToken()  { try { return localStorage.getItem("colab_token") || ""; } catch { return ""; } }
+function setToken(t) { try { t ? localStorage.setItem("colab_token", t) : localStorage.removeItem("colab_token"); } catch {} }
+
+async function api(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: body ? "POST" : "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(getToken() ? { Authorization: "Bearer " + getToken() } : {})
+    },
+    ...(body ? { body: JSON.stringify(body) } : {})
+  });
+  let data = {};
+  try { data = await res.json(); } catch {}
+  if (!res.ok) throw new Error(data.error || ("Error " + res.status));
+  return data;
+}
 
 // Runtime data — populated from Sheets on load
 let TALENTS   = {};
@@ -692,64 +709,12 @@ const TT_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxl
 /* ════════════════════════════════════════
    SHEET LOADER
 ════════════════════════════════════════ */
-async function fetchSheetCSV(sheetName) {
-  // El nombre de hoja va entre comillas simples para que la API pueda parsear
-  // el rango cuando contiene espacios o caracteres especiales. Una comilla
-  // simple dentro del nombre se escapa duplicándola (notación A1 de Sheets).
-  const range = `'${String(sheetName).replace(/'/g, "''")}'`;
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?key=${API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(`Sheets API error ${res.status}: ${err?.error?.message || res.statusText}`);
-  }
-  const data = await res.json();
-  return data.values || [];
-}
-
+/* El parseo del Sheet ahora vive en /api/data.js. Aquí solo queda
+   lo que el navegador sigue necesitando para formatear. */
 function parseNumber(str) {
   if (!str) return 0;
   return parseFloat(String(str).replace(/[$,\s]/g, "")) || 0;
 }
-
-/* ── Mapeo de columnas por nombre de encabezado ──────────────────────
-   Normaliza el texto del header (minúsculas, sin acentos ni puntos) para
-   poder ubicar cada dato aunque en el Sheet se muevan o inserten columnas. */
-function normHeader(s) {
-  return String(s == null ? "" : s)
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita acentos y la ~ de la ñ
-    .replace(/[.]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function buildHeaderMap(headerRow) {
-  const map = {};
-  (headerRow || []).forEach((h, i) => {
-    const k = normHeader(h);
-    if (k && !(k in map)) map[k] = i; // se queda con la primera aparición
-  });
-  return map;
-}
-
-// Lee una celda por nombre de encabezado; si no existe, usa la posición histórica.
-function cell(row, map, headerName, fallbackIdx) {
-  const i = map[headerName] !== undefined ? map[headerName] : fallbackIdx;
-  return row[i];
-}
-function txt(row, map, headerName, fallbackIdx) {
-  return (cell(row, map, headerName, fallbackIdx) || "").trim();
-}
-function num(row, map, headerName, fallbackIdx) {
-  return parseNumber(cell(row, map, headerName, fallbackIdx));
-}
-
-// Columnas que el portal necesita de la hoja "Ventas" (para avisar si faltan).
-const REQUIRED_CAMP_COLS = [
-  "no de campana", "talento", "campana", "status",
-  "subtotal campana", "total talento", "cobrado talento"
-];
 
 function extractHandle(raw) {
   if (!raw) return "";
@@ -793,17 +758,15 @@ function formatDateLabel(dateStr) {
 
 function loadFallbackData() {
   TALENTS = {
-    nicolas:        { clave:"CA003", nombre:"NICOLAS VIVES DELGADO",  apodo:"Nico",        email:"nikovivesd@gmail.com",         pw:"colab2026", manager:"Mariana Llaneza", fee_pct:20, categoria:"Moda y Belleza, Lifestyle", instagram:"nico.vives",    tiktok:"nicoo.vives",   contrato:"Con Exclusividad", antiguedad:"3 meses" },
-    fernando_ochoa: { clave:"CA004", nombre:"FERNANDO OCHOA SOLÍS",   apodo:"Fernando O.", email:"imfersoliscontacto@gmail.com",  pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"IMFERSOLIS",    tiktok:"",              contrato:"Sin Exclusividad", antiguedad:"2 meses" },
-    fernando_mayen: { clave:"CA008", nombre:"FERNANDO MAYEN MARIN",   apodo:"Fernando M.", email:"fermayen21@gmail.com",          pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"ferr.mayen",    tiktok:"fer.mayen",     contrato:"Sin Exclusividad", antiguedad:"2 meses" },
-    rolando:        { clave:"CA009", nombre:"ROLANDO HERVERT",        apodo:"Rolando",     email:"rolando@colab.mx",              pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Comedia, Wellness",        instagram:"rolhervert",    tiktok:"rollhervert",   contrato:"Sin Contrato", antiguedad:"1 mes" },
-    patricio:       { clave:"CA010", nombre:"PATRICIO SANTANA",       apodo:"Patricio",    email:"patricio@colab.mx",             pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Deportista",               instagram:"patosantana11", tiktok:"",              contrato:"Sin Contrato", antiguedad:"0 meses" },
-    gerardo:        { clave:"CA011", nombre:"GERARDO VILLA BRUNEL",   apodo:"Gerardo",     email:"gervilla13@gmail.com",          pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Moda y Belleza, Lifestyle", instagram:"gerardovillab", tiktok:"gerardovillab", contrato:"Sin Exclusividad", antiguedad:"1 mes" },
-    daniela:        { clave:"CA012", nombre:"DANIELA RANGEL",         apodo:"Daniela",     email:"daniela@colab.mx",              pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"danielarangel.l",tiktok:"daniela.rangel",contrato:"Sin Contrato", antiguedad:"0 meses" },
-    eduardo:        { clave:"CA013", nombre:"EDUARDO DAVID BECERRA",  apodo:"Eduardo",     email:"edb1998@gmail.com",             pw:"colab2026", manager:"Mariana Llaneza", fee_pct:20, categoria:"Wellness",                 instagram:"lalo_wellness", tiktok:"",              contrato:"Con Exclusividad", antiguedad:"0 meses" },
-    elke:           { clave:"CA014", nombre:"ELKE ORTH VELASCO",      apodo:"Elke",        email:"elkeorthv@gmail.com",           pw:"colab2026", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"elke.orth",     tiktok:"",              contrato:"Sin Exclusividad", antiguedad:"0 meses" },
-    ricardo:        { clave:"ADMIN", nombre:"RICARDO SALIDO",         apodo:"Ricardo",     email:"ricardo.salido@grupocfa.com",   pw:"Savi059_",   manager:"CO/LAB Agency",   fee_pct:0,  categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
-    colab:          { clave:"ADMIN", nombre:"MARIANA LLANEZA",         apodo:"Mariana",     email:"hello@colabagency.mx",          pw:"Colab2026*", manager:"CO/LAB Agency",   fee_pct:0,  categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
+    nicolas:        { clave:"CA003", nombre:"NICOLAS VIVES DELGADO",  apodo:"Nico",        email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:20, categoria:"Moda y Belleza, Lifestyle", instagram:"nico.vives",    tiktok:"nicoo.vives",   contrato:"Con Exclusividad", antiguedad:"3 meses" },
+    fernando_ochoa: { clave:"CA004", nombre:"FERNANDO OCHOA SOLÍS",   apodo:"Fernando O.", email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"IMFERSOLIS",    tiktok:"",              contrato:"Sin Exclusividad", antiguedad:"2 meses" },
+    fernando_mayen: { clave:"CA008", nombre:"FERNANDO MAYEN MARIN",   apodo:"Fernando M.", email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"ferr.mayen",    tiktok:"fer.mayen",     contrato:"Sin Exclusividad", antiguedad:"2 meses" },
+    rolando:        { clave:"CA009", nombre:"ROLANDO HERVERT",        apodo:"Rolando",     email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:25, categoria:"Comedia, Wellness",        instagram:"rolhervert",    tiktok:"rollhervert",   contrato:"Sin Contrato", antiguedad:"1 mes" },
+    patricio:       { clave:"CA010", nombre:"PATRICIO SANTANA",       apodo:"Patricio",    email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:25, categoria:"Deportista",               instagram:"patosantana11", tiktok:"",              contrato:"Sin Contrato", antiguedad:"0 meses" },
+    gerardo:        { clave:"CA011", nombre:"GERARDO VILLA BRUNEL",   apodo:"Gerardo",     email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:25, categoria:"Moda y Belleza, Lifestyle", instagram:"gerardovillab", tiktok:"gerardovillab", contrato:"Sin Exclusividad", antiguedad:"1 mes" },
+    daniela:        { clave:"CA012", nombre:"DANIELA RANGEL",         apodo:"Daniela",     email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"danielarangel.l",tiktok:"daniela.rangel",contrato:"Sin Contrato", antiguedad:"0 meses" },
+    eduardo:        { clave:"CA013", nombre:"EDUARDO DAVID BECERRA",  apodo:"Eduardo",     email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:20, categoria:"Wellness",                 instagram:"lalo_wellness", tiktok:"",              contrato:"Con Exclusividad", antiguedad:"0 meses" },
+    elke:           { clave:"CA014", nombre:"ELKE ORTH VELASCO",      apodo:"Elke",        email:"demo@colabagency.mx", manager:"Mariana Llaneza", fee_pct:25, categoria:"Lifestyle",                instagram:"elke.orth",     tiktok:"",              contrato:"Sin Exclusividad", antiguedad:"0 meses" },
   };
   CAMPAIGNS = [
     { id:"26-1001", talento_clave:"CA003", marca:"NIVEA",           agencia:"FBWORKERS",  campana:"NIVEA SUN UV STICK UDI",   fecha_inicio:"1 Abr 2026",  fecha_fin:"30 Abr 2026", status:"Finalizado", subtotal:40000,  fee:8000,  sub_t:32000,  iva:5120,  iva_ret:3411.20, isr:3200,    total_t:30508.80,  cobrado_t:30508.80, por_cobrar_t:0,         cfdi:"UDI NIVEA SUN.pdf" },
@@ -818,118 +781,31 @@ function loadFallbackData() {
 }
 
 async function loadSheetData() {
-  // Si estamos en un iframe (Claude preview) usamos datos locales directamente
-  const inIframe = window.self !== window.top;
-  if (inIframe) {
-    console.log("⚠ Preview mode: usando datos locales (en Vercel/navegador se carga el Sheet)");
+  // En el preview de Claude (iframe) no hay backend: datos locales.
+  if (window.self !== window.top) {
+    console.log("⚠ Preview mode: datos locales (en Vercel se carga del backend)");
     loadFallbackData();
     hideLoader();
     return true;
   }
-
-  showLoader("Conectando con Google Sheets...");
+  showLoader("Cargando datos...");
   try {
-    // ── Cargar talentos (hoja: Lista de Talento Activos)
-    const talentRows = await fetchSheetCSV("Lista de Talento Activos");
-    if (talentRows.length > 0) talentRows.shift(); // remove header row
-    TALENTS = {};
-    for (const row of talentRows) {
-      const status = (row[0]||"").trim();
-      const clave  = (row[1]||"").trim();
-      const nombre = (row[2]||"").trim();
-      const email  = (row[9]||"").trim();
-      const ig     = extractHandle(row[14]);
-      const tt     = extractHandle(row[15]);
-      const fee    = parseFloat((row[21]||"0").replace("%","")) || 25;
-      const manager= (row[19]||"Mariana Llaneza").trim();
-      const antig  = (row[23]||"").trim();
-      const cat    = (row[6]||"—").trim();
-      const contrato = (row[20]||"").trim();
-      if (!clave || !nombre) continue;
-      const key = clave.toLowerCase().replace(/[^a-z0-9]/g,"_");
-      TALENTS[key] = {
-        clave, nombre,
-        apodo: nombre.split(" ")[0].charAt(0).toUpperCase() + nombre.split(" ")[0].slice(1).toLowerCase(),
-        email: email || (clave.toLowerCase() + "@colab.mx"),
-        pw: "colab2026",
-        manager, fee_pct: fee,
-        categoria: cat,
-        instagram: ig, tiktok: tt,
-        contrato: contrato || "—",
-        antiguedad: antig ? antig + " meses" : "—",
-        status
-      };
-    }
-
-    // ── Cargar campañas (hoja: Ventas 2026)
-    const campRows = await fetchSheetCSV("Ventas");
-    // Los encabezados se leen por NOMBRE, no por posición. Así, si en el Sheet se
-    // inserta, borra o mueve una columna, el portal se sigue ajustando solo.
-    const campHeader = campRows.length > 0 ? campRows.shift() : [];
-    const H = buildHeaderMap(campHeader);
-    const missing = REQUIRED_CAMP_COLS.filter(n => H[n] === undefined);
-    if (missing.length) console.warn("⚠ Columnas no encontradas en 'Ventas':", missing);
-    // La hoja "Ventas" tiene una fila vacía tras el header — la omitimos
-    const idIdx = H["no de campana"] !== undefined ? H["no de campana"] : 3;
-    while (campRows.length > 0 && !(campRows[0][idIdx]||"").trim()) campRows.shift();
-    CAMPAIGNS = [];
-    for (const row of campRows) {
-      const id      = txt(row, H, "no de campana",   3);
-      const nombre  = txt(row, H, "talento",         4);
-      const clave   = txt(row, H, "clave talento",   5);
-      const manager = txt(row, H, "manager",         7);
-      const campana = txt(row, H, "campana",         8);
-      const agencia = txt(row, H, "agencia",        10);
-      const marca   = txt(row, H, "marca",          11);
-      const fIni    = txt(row, H, "fecha inicio",   12);
-      const fFin    = txt(row, H, "fecha final",    13);
-      const status  = txt(row, H, "status",         14);
-      const cfdi    = txt(row, H, "cfdis emitidos", 15);
-      const sub     = num(row, H, "subtotal campana", 16);
-      const fee     = num(row, H, "fee agencia",      21);
-      const sub_t   = num(row, H, "subtotal talento", 22);
-      const iva     = num(row, H, "iva",              23);
-      const iva_ret = num(row, H, "iva retenido",     24);
-      const isr     = num(row, H, "isr retenido",     25);
-      const total_t = num(row, H, "total talento",    26);
-      const cob_t   = num(row, H, "cobrado talento",  27);
-      // "Por Cobrar Talento" ya no existe como columna: si falta, se calcula.
-      const por_t   = H["por cobrar talento"] !== undefined
-        ? num(row, H, "por cobrar talento", 28)
-        : Math.max(0, total_t - cob_t);
-
-      // Si la columna F está vacía, intentar encontrar la clave por nombre
-      const claveResuelta = clave || (() => {
-        if (!nombre || nombre.toUpperCase() === "N/A") return "N/A";
-        const match = Object.values(TALENTS).find(t =>
-          t.nombre && t.nombre.toUpperCase() === nombre.toUpperCase()
-        );
-        return match ? match.clave : "N/A";
-      })();
-
-      if (!id || !campana || sub === 0) continue;
-      CAMPAIGNS.push({
-        id, talento_clave: claveResuelta, nombre, manager,
-        campana, agencia, marca,
-        fecha_inicio: formatDateLabel(fIni),
-        fecha_fin:    formatDateLabel(fFin),
-        status: status.trim(),
-        cfdi: cfdi,
-        subtotal: sub, fee,
-        sub_t, iva, iva_ret, isr,
-        total_t,
-        cobrado_t: cob_t,
-        por_cobrar_t: por_t
-      });
-    }
-
+    const r = await api("/data");
+    TALENTS   = r.talents   || {};
+    CAMPAIGNS = r.campaigns || [];
+    isAdmin       = r.role === "admin" || r.role === "manager";
+    managerFilter = r.managerOf || null;
+    SESSION_ROLE  = r.role;
+    SESSION_ME    = r.me || null;
     hideLoader();
-    console.log(`✅ Sheets cargado: ${Object.keys(TALENTS).length} talentos, ${CAMPAIGNS.length} campañas (de ${campRows.length} filas leídas en "Ventas")`);
+    console.log(`✅ Datos cargados (${r.role}): ${Object.keys(TALENTS).length} talentos, ${CAMPAIGNS.length} campañas`);
     return true;
   } catch (err) {
     hideLoader();
+    // Sesión vencida o inválida → de vuelta al login, sin pantalla de error roja.
+    if (/sesi[oó]n/i.test(err.message)) { setToken(""); logout(); return false; }
     showSheetError(err.message);
-    console.error("Sheets error:", err);
+    console.error("data error:", err);
     return false;
   }
 }
@@ -1061,6 +937,8 @@ function toggleTheme() {
 })();
 
 let currentUser = null;
+let SESSION_ROLE = null;
+let SESSION_ME = null;
 let currentYear = new Date().getFullYear();
 let currentPlatform = "ventas";
 let currentPeriod = "all";
@@ -1069,8 +947,8 @@ let chartInstances = {};
 /* ════════════════════════════════════════
    AUTH
 ════════════════════════════════════════ */
-// Init: load sheet data then show login
-loadSheetData();
+// Los datos ya no se cargan antes del login: primero se autentica
+// contra /api/auth y solo entonces /api/data devuelve lo que corresponde.
 applyRemember(); // pre-rellena correo/contraseña si el usuario marcó "Recordar mis datos"
 
 
@@ -1122,57 +1000,17 @@ function togglePass(inputId, btn) {
 // Passwords stored persistently in the "Usuarios" sheet via Apps Script Web App.
 // Apps Script Web Apps don't send CORS headers reliably for fetch(), so we use
 // JSONP (script tag injection) which is immune to CORS restrictions.
-let _jsonpCounter = 0;
-function authApiCall(payload) {
-  return new Promise((resolve) => {
-    const cbName = "_authCb" + (_jsonpCounter++);
-    const timeout = setTimeout(() => {
-      cleanup();
-      resolve({ ok: false, error: "timeout" });
-    }, 12000);
-
-    function cleanup() {
-      clearTimeout(timeout);
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-    }
-
-    window[cbName] = (data) => {
-      cleanup();
-      resolve(data);
-    };
-
-    const params = new URLSearchParams({
-      callback: cbName,
-      payload: JSON.stringify(payload)
-    });
-
-    const script = document.createElement("script");
-    script.src = `${AUTH_API_URL}?${params.toString()}`;
-    script.onerror = () => {
-      cleanup();
-      resolve({ ok: false, error: "network" });
-    };
-    document.body.appendChild(script);
-  });
-}
-
+/* La validación de contraseñas ocurre en /api/auth contra la pestaña
+   "Usuarios" del Sheet privado. El navegador nunca ve una contraseña
+   guardada, ni la suya ni la de nadie más. */
 async function checkLoginRemote(email, password) {
-  return authApiCall({ action: "login", email, password });
+  return api("/auth", { action: "login", email, password });
 }
-
-async function savePasswordRemote(email, password, clave) {
-  return authApiCall({ action: "register", email, password, clave });
+async function savePasswordRemote(email, password) {
+  return api("/auth", { action: "register", email, password });
 }
-
-// Local cache so the same device doesn't need to hit the network every keystroke/login retry
-function getSavedPasswords() {
-  try { return JSON.parse(localStorage.getItem("colab_passwords") || "{}"); } catch { return {}; }
-}
-function cachePasswordLocally(email, pw) {
-  const saved = getSavedPasswords();
-  saved[email.toLowerCase()] = pw;
-  localStorage.setItem("colab_passwords", JSON.stringify(saved));
+async function resetPasswordRemote(email) {
+  return api("/auth", { action: "reset", email });
 }
 
 /* ── Recordar mis datos (correo + contraseña) ── */
@@ -1203,56 +1041,52 @@ function applyRemember() {
   }
 }
 
-function doRegister() {
-  const email  = (document.getElementById("reg-email").value || "").trim().toLowerCase();
-  const pass   = document.getElementById("reg-pass").value;
-  const pass2  = document.getElementById("reg-pass2").value;
-  const errEl  = document.getElementById("reg-err");
-  const okEl   = document.getElementById("reg-ok");
+async function doRegister() {
+  const email = (document.getElementById("reg-email").value || "").trim().toLowerCase();
+  const pass  = document.getElementById("reg-pass").value;
+  const pass2 = document.getElementById("reg-pass2").value;
+  const errEl = document.getElementById("reg-err");
+  const okEl  = document.getElementById("reg-ok");
   errEl.textContent = ""; okEl.style.display = "none";
 
   if (!email) { errEl.textContent = "Ingresa tu correo"; return; }
   if (pass.length < 6) { errEl.textContent = "La contraseña debe tener al menos 6 caracteres"; return; }
   if (pass !== pass2)  { errEl.textContent = "Las contraseñas no coinciden"; return; }
 
-  // Verify email exists in TALENTS
-  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
-  if (!user) { errEl.textContent = "Este correo no está registrado en CO/LAB. Contacta a tu manager."; return; }
-
   const btn = document.querySelector('#form-register .btn-enter');
   if (btn) { btn.disabled = true; btn.textContent = "CREANDO..."; }
-
-  savePasswordRemote(email, pass, user.clave).then(resp => {
-    if (btn) { btn.disabled = false; btn.textContent = "CREAR CUENTA"; }
-    if (!resp.ok) { errEl.textContent = "No se pudo guardar. Intenta de nuevo."; return; }
-    cachePasswordLocally(email, pass);
+  try {
+    await savePasswordRemote(email, pass);
     okEl.style.display = "block";
     setTimeout(() => switchLoginTab("login"), 1800);
-  });
+  } catch (e) {
+    errEl.textContent = e.message || "No se pudo crear la cuenta.";
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "CREAR CUENTA"; }
+  }
 }
 
-function doForgot() {
-  const email  = (document.getElementById("forgot-email").value || "").trim().toLowerCase();
-  const errEl  = document.getElementById("forgot-err");
-  const okEl   = document.getElementById("forgot-ok");
+async function doForgot() {
+  const email = (document.getElementById("forgot-email").value || "").trim().toLowerCase();
+  const errEl = document.getElementById("forgot-err");
+  const okEl  = document.getElementById("forgot-ok");
   errEl.textContent = ""; okEl.style.display = "none";
-
   if (!email) { errEl.textContent = "Ingresa tu correo"; return; }
-  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
-  if (!user) { errEl.textContent = "Este correo no está registrado"; return; }
 
   const btn = document.querySelector('#form-forgot .btn-enter');
   if (btn) { btn.disabled = true; btn.textContent = "ENVIANDO..."; }
-
-  savePasswordRemote(email, "colab2026", user.clave).then(resp => {
-    if (btn) { btn.disabled = false; btn.textContent = "ENVIAR"; }
-    if (!resp.ok) { errEl.textContent = "No se pudo restablecer. Intenta de nuevo."; return; }
-    cachePasswordLocally(email, "colab2026");
-    okEl.textContent = "✅ Tu contraseña fue restablecida a: colab2026";
+  try {
+    const r = await resetPasswordRemote(email);
+    okEl.textContent = r.temporal
+      ? "✅ Tu contraseña temporal es: " + r.temporal
+      : "✅ Si el correo está registrado, se restableció la contraseña.";
     okEl.style.display = "block";
-  });
+  } catch (e) {
+    errEl.textContent = e.message || "No se pudo restablecer.";
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "ENVIAR"; }
+  }
 }
-
 
 /* ════════════════════════════════════════
    ADMIN MODE
@@ -1364,95 +1198,74 @@ function adminSwitchTo(email) {
 
 async function doLogin() {
   const email = document.getElementById("email-input").value.trim().toLowerCase();
-  const pw = document.getElementById("pass-input").value;
-  const err = document.getElementById("login-err");
-  const btn = document.querySelector('#form-login .btn-enter');
+  const pw    = document.getElementById("pass-input").value;
+  const err   = document.getElementById("login-err");
+  const btn   = document.querySelector('#form-login .btn-enter');
+  err.textContent = "";
 
-  // ── Admin hardcodeado — siempre funciona ──
-  const ADMINS = [
-    { clave:"ADMIN", nombre:"RICARDO SALIDO", apodo:"Ricardo", email:"ricardo.salido@grupocfa.com", pw:"Savi059_",   manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
-    { clave:"ADMIN", nombre:"MARIANA LLANEZA",  apodo:"Mariana", email:"hello@colabagency.mx",        pw:"Colab2026*", manager:"CO/LAB Agency", fee_pct:0, categoria:"Admin", instagram:"", tiktok:"", contrato:"—", antiguedad:"—" },
-    // Manager de talento — ve el panel admin pero SOLO de sus talentos asignados (columna "Manager" del Sheet)
-    { clave:"ADMIN", nombre:"PAULA TOMMASI", apodo:"Paula", email:"paula.tommasi@colabagency.mx", pw:"Paula2026*", manager:"CO/LAB Agency", fee_pct:0, categoria:"Manager", instagram:"", tiktok:"", contrato:"—", antiguedad:"—", managerOf:"Paula Tommasi" }
-  ];
-  const admin = ADMINS.find(a => a.email.toLowerCase() === email && a.pw === pw);
-  if (admin) {
-    err.textContent = "";
-    isAdmin = true;
-    currentUser = admin;
-    managerFilter = admin.managerOf || null; // si es Manager, filtra; si no, ve todo
+  if (!email || !pw) { err.textContent = "Ingresa tu correo y contraseña"; return; }
+  if (btn) { btn.disabled = true; btn.textContent = "VERIFICANDO..."; }
+
+  try {
+    // Ya no hay credenciales en este archivo: el servidor valida y
+    // devuelve un token de sesión firmado.
+    const r = await checkLoginRemote(email, pw);
+    setToken(r.token);
+
+    const ok = await loadSheetData();   // trae solo lo que le toca a este usuario
+    if (!ok) { if (btn) { btn.disabled = false; btn.textContent = "ENTRAR"; } return; }
+
+    persistRemember(email, pw);
     currentPlatform = "ventas";
-    // Show admin arrow and nav tab
-    const arrow = document.getElementById("admin-arrow");
-    if (arrow) arrow.style.display = "inline";
-    const logoutBtn = document.getElementById("btn-logout-simple");
-    if (logoutBtn) logoutBtn.style.display = "none";
-    const navAdmin = document.getElementById("nav-admin");
-    if (navAdmin) navAdmin.style.display = "block";
-    // Header con el nombre real del usuario
-    const initials = admin.apodo ? admin.apodo.slice(0,2).toUpperCase() : "CL";
-    document.getElementById("top-av").textContent = initials;
-    document.getElementById("top-name").textContent = admin.apodo;
-    document.getElementById("dash-name").textContent = admin.apodo;
+
     document.getElementById("footer-date").textContent =
       "Actualizado: " + new Date().toLocaleDateString("es-MX", {day:"numeric",month:"long",year:"numeric"});
     document.getElementById("year-display").textContent = new Date().getFullYear();
-    const themeBtnAdmin = document.getElementById("theme-toggle-btn");
-    if (themeBtnAdmin) themeBtnAdmin.textContent = (document.documentElement.getAttribute("data-theme") === "dark") ? "☀️" : "🌙";
-    // Hide talent tabs, show only admin tab
-    document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "none");
+    const themeBtn = document.getElementById("theme-toggle-btn");
+    if (themeBtn) themeBtn.textContent = (document.documentElement.getAttribute("data-theme") === "dark") ? "☀️" : "🌙";
+
     document.getElementById("login-page").style.display = "none";
-    document.getElementById("dash-page").style.display = "block";
-    // Activate admin tab
-    document.querySelectorAll(".dash-section").forEach(s => s.classList.remove("active"));
-    document.querySelectorAll(".snav-item").forEach(s => s.classList.remove("active"));
-    document.getElementById("sec-admin").classList.add("active");
-    document.getElementById("nav-admin").classList.add("active");
-    const yearWrap2 = document.getElementById("year-selector-wrap");
-    if (yearWrap2) yearWrap2.style.display = "none";
-    persistRemember(email, pw);
-    renderAdminDashboard();
+    document.getElementById("dash-page").style.display  = "block";
+
+    if (isAdmin) {
+      currentUser = SESSION_ME || { clave:"ADMIN", nombre:email, apodo:"Admin", email, manager:"CO/LAB Agency", fee_pct:0 };
+      const arrow = document.getElementById("admin-arrow");
+      if (arrow) arrow.style.display = "inline";
+      const logoutBtn = document.getElementById("btn-logout-simple");
+      if (logoutBtn) logoutBtn.style.display = "none";
+      const navAdmin = document.getElementById("nav-admin");
+      if (navAdmin) navAdmin.style.display = "block";
+      const ini = (currentUser.apodo || "AD").slice(0,2).toUpperCase();
+      document.getElementById("top-av").textContent   = ini;
+      document.getElementById("top-name").textContent = currentUser.apodo;
+      document.getElementById("dash-name").textContent = currentUser.apodo;
+      document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "none");
+      document.querySelectorAll(".dash-section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".snav-item").forEach(s => s.classList.remove("active"));
+      document.getElementById("sec-admin").classList.add("active");
+      document.getElementById("nav-admin").classList.add("active");
+      const yw = document.getElementById("year-selector-wrap");
+      if (yw) yw.style.display = "none";
+      renderAdminDashboard();
+    } else {
+      const me = Object.values(TALENTS)[0];
+      if (!me) { err.textContent = "Tu usuario no tiene un talento asociado. Contacta a tu manager."; if (btn) { btn.disabled = false; btn.textContent = "ENTRAR"; } return; }
+      currentUser = me;
+      document.querySelectorAll(".snav-item:not(#nav-admin)").forEach(t => t.style.display = "block");
+      renderAll(currentUser);
+    }
     window.scrollTo(0, 0);
-    return;
+  } catch (e) {
+    err.textContent = e.message || "Correo o contraseña incorrectos";
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "ENTRAR"; }
   }
-
-  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email);
-  if (!user) { err.textContent = "Correo o contraseña incorrectos"; return; }
-
-  if (btn) { btn.disabled = true; btn.textContent = "VERIFICANDO..."; }
-  err.textContent = "";
-
-  const resp = await checkLoginRemote(email, pw);
-
-  let valid = false;
-  if (resp.ok && resp.hasCustomPassword) {
-    // User has set a custom password in the sheet — must match exactly
-    valid = resp.valid;
-    if (valid) cachePasswordLocally(email, pw);
-  } else if (resp.ok && !resp.hasCustomPassword) {
-    // No custom password yet — fall back to default temp password
-    valid = (pw === user.pw);
-  } else {
-    // Network/API failure — fall back to local cache or default password
-    const saved = getSavedPasswords();
-    const cachedPw = saved[email] || null;
-    valid = cachedPw ? (pw === cachedPw) : (pw === user.pw);
-  }
-
-  if (btn) { btn.disabled = false; btn.textContent = "ENTRAR"; }
-
-  if (!valid) { err.textContent = "Correo o contraseña incorrectos"; return; }
-
-  persistRemember(email, pw);
-  currentUser = user;
-  currentPlatform = "ventas";
-  renderAll(user);
-  document.getElementById("login-page").style.display = "none";
-  document.getElementById("dash-page").style.display = "block";
-  window.scrollTo(0, 0);
 }
 
 function logout() {
+  setToken("");            // corta la sesión del lado del cliente
+  TALENTS = {}; CAMPAIGNS = [];   // nada del usuario anterior queda en memoria
+  currentUser = null; SESSION_ROLE = null; SESSION_ME = null;
   isAdmin = false;
   managerFilter = null;
   document.getElementById("login-page").style.display = "flex";
