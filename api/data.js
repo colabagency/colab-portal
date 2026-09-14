@@ -34,29 +34,47 @@ function formatDateLabel(dateStr) {
 
 async function loadTalentos() {
   const rows = await readSheet(TAB_TALENTOS);
-  if (rows.length) rows.shift();
+  const header = rows.length ? rows.shift() : [];
+  const H = buildHeaderMap(header);
+
+  // Igual que en Ventas: se busca por NOMBRE de encabezado, y si no aparece
+  // se cae a la posición histórica. Así un cambio de columnas no rompe nada.
+  const T = {
+    status:     findCol(H, ["status", "estatus"],                       0),
+    clave:      findCol(H, ["clave talento", "clave"],                  1),
+    nombre:     findCol(H, ["talento", "nombre"],                       2),
+    categoria:  findCol(H, ["categoria", "categorias"],                 6),
+    manager:    findCol(H, ["manager"],                                19),
+    fee:        findCol(H, ["fee agencia", "fee", "% fee", "fee %"],   21),
+    instagram:  findCol(H, ["instagram", "ig"],                        14),
+    tiktok:     findCol(H, ["tiktok", "tik tok", "tt"],                15),
+    contrato:   findCol(H, ["contrato", "tipo de contrato"],           20),
+    antiguedad: findCol(H, ["antiguedad", "antiguedad meses"],         23),
+  };
+
   const TALENTS = {};
   for (const row of rows) {
-    const status = (row[0] || "").trim();
-    const clave  = (row[1] || "").trim();
-    const nombre = (row[2] || "").trim();
+    const clave  = (row[T.clave]  || "").trim();
+    const nombre = (row[T.nombre] || "").trim();
     if (!clave || !nombre) continue;
     const key = clave.toLowerCase().replace(/[^a-z0-9]/g, "_");
     const primer = nombre.split(" ")[0];
     TALENTS[key] = {
       clave, nombre,
       apodo: primer.charAt(0).toUpperCase() + primer.slice(1).toLowerCase(),
-      manager: (row[19] || "Mariana Llaneza").trim(),
-      fee_pct: parseFloat(String(row[21] || "0").replace("%", "")) || 25,
-      categoria: (row[6] || "—").trim(),
-      instagram: extractHandle(row[14]),
-      tiktok: extractHandle(row[15]),
-      contrato: (row[20] || "").trim() || "—",
-      antiguedad: (row[23] || "").trim() ? (row[23] || "").trim() + " meses" : "—",
-      status
+      manager: (row[T.manager] || "Mariana Llaneza").trim(),
+      fee_pct: parseFloat(String(row[T.fee] || "0").replace("%", "")) || 25,
+      categoria: (row[T.categoria] || "—").trim(),
+      instagram: extractHandle(row[T.instagram]),
+      tiktok: extractHandle(row[T.tiktok]),
+      contrato: (row[T.contrato] || "").trim() || "—",
+      antiguedad: (row[T.antiguedad] || "").trim() ? (row[T.antiguedad] || "").trim() + " meses" : "—",
+      status: (row[T.status] || "").trim()
     };
   }
-  return TALENTS;
+  // Se devuelven también los encabezados reales, para poder diagnosticar
+  // desde la consola si algún día algo no cuadra.
+  return { TALENTS, header, cols: T };
 }
 
 async function loadCampanas(TALENTS) {
@@ -146,8 +164,19 @@ export default async function handler(req, res) {
   if (!ses) return res.status(401).json({ ok: false, error: "Sesión inválida o expirada" });
 
   try {
-    const TALENTS  = await loadTalentos();
+    const { TALENTS, header: tHeader } = await loadTalentos();
     const CAMPAIGNS = await loadCampanas(TALENTS);
+
+    // Diagnóstico: aparece en la consola del navegador y dice de inmediato
+    // si el problema es la pestaña de talentos, la de ventas, o el usuario.
+    const diag = {
+      talentosLeidos: Object.keys(TALENTS).length,
+      campanasLeidas: CAMPAIGNS.length,
+      clavesDisponibles: Object.values(TALENTS).map(t => t.clave),
+      encabezadosTalentos: tHeader,
+      tuClave: ses.clave || "(vacía)",
+      tuRol: ses.role
+    };
 
     let talents = TALENTS;
     let camps   = CAMPAIGNS;
@@ -181,7 +210,8 @@ export default async function handler(req, res) {
       managerOf: ses.managerOf || null,
       me,
       talents,
-      campaigns: camps
+      campaigns: camps,
+      diag
     });
   } catch (e) {
     console.error("data:", e);
