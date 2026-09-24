@@ -1119,15 +1119,15 @@ function toggleAdminMenu() {
     </button>`;
     list.innerHTML = adminOption + Object.values(TALENTS).filter(t => t.clave !== "ADMIN" &&
       (!managerFilter || norm(t.manager) === norm(managerFilter))).map(t => `
-      <button onclick="adminSwitchTo('${t.email}')"
-        style="width:100%;padding:10px 16px;background:${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:10px"
-        onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${currentUser && currentUser.email===t.email && !isOnAdmin?"var(--off-white)":"none'"}">
+      <button onclick="adminSwitchTo('${t.clave}')"
+        style="width:100%;padding:10px 16px;background:${currentUser && currentUser.clave===t.clave && !isOnAdmin?"var(--off-white)":"none"};border:none;text-align:left;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:10px"
+        onmouseenter="this.style.background='var(--off-white)'" onmouseleave="this.style.background='${currentUser && currentUser.clave===t.clave && !isOnAdmin?"var(--off-white)":"none'"}">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:12px;color:white;flex-shrink:0">${initials(t.nombre)}</div>
         <div>
           <div style="font-weight:500">${t.apodo}</div>
           <div style="font-size:10px;color:var(--gray-500)">${t.clave}</div>
         </div>
-        ${currentUser && currentUser.email===t.email && !isOnAdmin?'<span style="margin-left:auto;color:var(--green);font-size:12px">✓</span>':""}
+        ${currentUser && currentUser.clave===t.clave && !isOnAdmin?'<span style="margin-left:auto;color:var(--green);font-size:12px">✓</span>':""}
       </button>`).join("");
     // Close on outside click
     setTimeout(() => {
@@ -1170,9 +1170,11 @@ function adminGoHome() {
   window.scrollTo(0, 0);
 }
 
-function adminSwitchTo(email) {
-  const user = Object.values(TALENTS).find(t => t.email.toLowerCase() === email.toLowerCase());
-  if (!user) return;
+function adminSwitchTo(clave) {
+  // Se busca por CLAVE, no por correo: /api/data ya no envía los correos
+  // de otros talentos al navegador.
+  const user = Object.values(TALENTS).find(t => t.clave === clave);
+  if (!user) { console.warn("Talento no encontrado:", clave); return; }
   // Seguridad: un Manager solo puede ver a los talentos que tiene asignados
   if (managerFilter && norm(user.manager) !== norm(managerFilter)) return;
   document.getElementById("admin-menu").style.display = "none";
